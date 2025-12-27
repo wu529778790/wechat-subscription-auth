@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Build output
+.nuxt
+.nuxt-dist
+.output
+dist
+.build
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.db-journal
+prisma/migrations
+
+# OS files
+.DS_Store
+Thumbs.db
+*.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Temporary files
+.tmp
+.cache
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Docker
+docker-compose.override.yml
