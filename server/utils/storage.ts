@@ -9,7 +9,9 @@ import path from 'path';
 const STORAGE_TYPE = process.env.STORAGE_TYPE || 'file'; // 'file' 或 'sqlite'
 
 // 数据文件路径（JSON）
-const DATA_DIR = path.join(process.cwd(), 'data');
+// Vercel 环境使用 /tmp 目录，其他环境使用项目 data 目录
+const isVercel = process.env.VERCEL === '1';
+const DATA_DIR = isVercel ? '/tmp' : path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'auth-data.json');
 
 interface AuthCodeData {
