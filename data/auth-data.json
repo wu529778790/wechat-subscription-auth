@@ -1,12 +1,4 @@
 {
-  "authCodes": {
-    "161117": {
-      "openid": "test_openid_1766814839029",
-      "expiredAt": 1766815139029,
-      "nickname": "测试用户",
-      "headimgurl": "https://example.com/avatar.jpg",
-      "unionid": "test_unionid_1766814839029"
-    }
-  },
+  "authCodes": {},
   "authenticatedUsers": {}
 }
