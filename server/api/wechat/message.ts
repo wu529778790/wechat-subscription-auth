@@ -69,10 +69,8 @@ export default defineEventHandler(async (event) => {
 
       if (isEncrypted) {
         // ========== 安全模式（加密消息）==========
-        console.log('[WeChat] 检测到加密消息，使用安全模式处理');
-
         // 验证消息签名
-        const encryptMatch = body.match(/<Encrypt><!\[CDATA\[(.*?)\]\]><\/Encrypt>/);
+        const encryptMatch = body.match(/<Encrypt><!\\[CDATA\\[(.*?)\\]\\]><\\/Encrypt>/);
         if (!encryptMatch) {
           return 'Invalid encrypted message';
         }
@@ -89,8 +87,6 @@ export default defineEventHandler(async (event) => {
 
         if (!msg_signature || msg_signature !== expectedSignature) {
           console.log('[WeChat] 消息签名验证失败');
-          console.log(`[WeChat] 期望签名: ${expectedSignature}`);
-          console.log(`[WeChat] 收到签名: ${msg_signature}`);
           return 'Invalid signature';
         }
 
@@ -101,15 +97,12 @@ export default defineEventHandler(async (event) => {
           config.appId
         );
 
-        console.log('[WeChat] 解密后消息:', decryptedXml.substring(0, 200));
-
         // 解析解密后的XML
         message = parseWeChatMessage(decryptedXml);
         needEncrypt = true; // 需要加密回复
 
       } else {
         // ========== 明文模式或兼容模式==========
-        console.log('[WeChat] 使用明文模式处理');
         message = parseWeChatMessage(body);
       }
 
@@ -150,7 +143,6 @@ export default defineEventHandler(async (event) => {
           console.log(`[WeChat] 用户 ${FromUserName} 请求验证码，重新生成 ${existingCode}`);
 
           replyMsg = generateCodeMessage(existingCode);
-          console.log(`[WeChat] 回复消息内容:`, replyMsg);
         } else {
           // 默认回复
           replyMsg = '欢迎！如果您需要重新获取验证码，请发送"已关注"或"认证"。';
@@ -160,8 +152,6 @@ export default defineEventHandler(async (event) => {
       // 构建回复消息
       if (needEncrypt && config.aesKey) {
         // ========== 安全模式：加密回复 ==========
-        console.log('[WeChat] 使用安全模式回复（加密）');
-
         // 1. 生成明文回复XML
         const replyXml = generateWeChatReply({
           ToUserName: FromUserName,
@@ -194,20 +184,17 @@ export default defineEventHandler(async (event) => {
           nonce as string
         );
 
-        console.log('[WeChat] 加密回复生成成功');
         return finalReply;
 
       } else {
         // ========== 明文模式：直接回复 ==========
-        const replyXml = generateWeChatReply({
+        return generateWeChatReply({
           ToUserName: FromUserName,
           FromUserName: ToUserName,
           CreateTime: Math.floor(Date.now() / 1000),
           MsgType: 'text',
           Content: replyMsg
         });
-        console.log('[WeChat] 明文模式回复内容:', replyXml);
-        return replyXml;
       }
 
     } catch (error) {

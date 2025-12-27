@@ -56,30 +56,14 @@ export function decryptWeChatMessage(
     const content = unpadded.slice(20, 20 + msgLen).toString('utf8');
     const appIdFromMsg = unpadded.slice(20 + msgLen).toString('utf8');
 
-    // 6. 验证AppID - 调试信息
-    console.log('[Decrypt] 调试信息:', {
-      unpaddedLength: unpadded.length,
-      unpaddedHex: unpadded.toString('hex').substring(0, 100) + '...',
-      msgLen,
-      msgLenHex: unpadded.slice(16, 20).toString('hex'),
-      contentLength: content.length,
-      contentPreview: content.substring(0, 100),
-      appIdFromMsg,
-      expectedAppId: appId,
-      match: appIdFromMsg === appId,
-      sliceStart: 20 + msgLen,
-      sliceEnd: unpadded.length,
-      remainingBytes: unpadded.slice(20 + msgLen),
-      remainingHex: unpadded.slice(20 + msgLen).toString('hex')
-    });
-
+    // 6. 验证AppID
     if (appIdFromMsg !== appId) {
       throw new Error(`AppID验证失败: 期望[${appId}] 收到[${appIdFromMsg}]`);
     }
 
     return content;
   } catch (error) {
-    console.error('解密失败:', error);
+    console.error('[WeChat] 解密失败:', error);
     throw new Error('消息解密失败');
   }
 }
