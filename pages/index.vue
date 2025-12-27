@@ -1,97 +1,148 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      <!-- 加载状态 -->
-      <div v-if="loading" class="bg-white rounded-2xl shadow-2xl p-8 text-center">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <h2 class="text-xl font-bold text-gray-700">正在检查认证状态...</h2>
+    <!-- 主要内容区域 - 已认证时显示 -->
+    <div v-if="session?.authenticated" class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 animate-fade-in">
+      <div class="text-center mb-6">
+        <div class="text-6xl mb-2">🎉</div>
+        <h2 class="text-2xl font-bold text-gray-800">认证成功！</h2>
+        <p class="text-gray-600 mt-2">欢迎访问，您已完成公众号认证</p>
       </div>
 
-      <!-- 已登录 -->
-      <div v-else-if="session?.authenticated" class="bg-white rounded-2xl shadow-2xl p-8">
-        <div class="text-center mb-6">
-          <div class="text-5xl mb-2">✅</div>
-          <h2 class="text-2xl font-bold text-gray-800">认证成功！</h2>
-          <p class="text-gray-600 mt-2">欢迎访问，您已完成公众号认证</p>
+      <div class="bg-gray-50 rounded-lg p-4 mb-6 space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">用户ID</span>
+          <span class="font-mono font-semibold">{{ session.user.openid.substring(0, 8) }}...</span>
         </div>
-
-        <div class="bg-gray-50 rounded-lg p-4 mb-6 space-y-2 text-sm">
-          <div class="flex justify-between">
-            <span class="text-gray-500">用户ID</span>
-            <span class="font-mono font-semibold">{{ session.user.openid.substring(0, 8) }}...</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">认证时间</span>
-            <span>{{ formatTime(session.user.authenticatedAt) }}</span>
-          </div>
-          <div v-if="session.user.nickname" class="flex justify-between">
-            <span class="text-gray-500">昵称</span>
-            <span>{{ session.user.nickname }}</span>
-          </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">认证时间</span>
+          <span>{{ formatTime(session.user.authenticatedAt) }}</span>
         </div>
-
-        <button
-          @click="logout"
-          class="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition"
-        >
-          退出登录
-        </button>
+        <div v-if="session.user.nickname" class="flex justify-between">
+          <span class="text-gray-500">昵称</span>
+          <span>{{ session.user.nickname }}</span>
+        </div>
       </div>
 
-      <!-- 未登录 - 认证流程 -->
-      <div v-else class="bg-white rounded-2xl shadow-2xl p-8">
-        <div class="text-center mb-6">
-          <div class="text-5xl mb-2">📱</div>
-          <h2 class="text-2xl font-bold text-gray-800">完成认证</h2>
-          <p class="text-gray-600 mt-2">关注公众号，获取验证码并输入</p>
+      <button
+        @click="logout"
+        class="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition"
+      >
+        退出登录
+      </button>
+    </div>
+
+    <!-- 未认证时显示的主页内容 -->
+    <div v-else-if="!loading" class="w-full max-w-md text-center animate-fade-in">
+      <!-- 欢迎卡片 -->
+      <div class="bg-white/90 backdrop-blur rounded-2xl shadow-2xl p-8 mb-4">
+        <div class="text-5xl mb-3">🔐</div>
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">微信订阅号认证系统</h1>
+        <p class="text-gray-600 text-sm">为了保护您的隐私，请先完成身份认证</p>
+      </div>
+
+      <!-- 快速开始按钮 -->
+      <button
+        @click="showAuthModal = true"
+        class="w-full py-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-2xl font-bold text-lg shadow-lg transition transform hover:scale-105"
+      >
+        🔓 立即认证
+      </button>
+
+      <!-- 简洁说明 -->
+      <div class="mt-4 bg-white/80 backdrop-blur rounded-xl p-4 text-sm text-gray-700">
+        <p class="opacity-80">关注公众号 → 获取验证码 → 输入完成认证</p>
+      </div>
+
+      <!-- 开发测试工具（折叠式） -->
+      <div class="mt-4 bg-white/80 backdrop-blur rounded-xl p-3 text-sm text-gray-700 border border-yellow-300">
+        <div class="flex items-center justify-between mb-2 cursor-pointer" @click="showTestTools = !showTestTools">
+          <span class="font-semibold">🛠️ 开发测试</span>
+          <span class="text-xs px-2 py-1 bg-yellow-100 rounded">{{ showTestTools ? '隐藏' : '显示' }}</span>
+        </div>
+
+        <div v-if="showTestTools" class="space-y-2 mt-2">
+          <input
+            v-model="testOpenid"
+            placeholder="测试OpenID"
+            class="w-full px-2 py-1 text-xs border rounded"
+          />
+          <button
+            @click="simulateSubscribe"
+            :disabled="isSimulating"
+            class="w-full py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 text-white rounded font-semibold transition text-xs"
+          >
+            {{ isSimulating ? '模拟中...' : '🎯 模拟关注公众号' }}
+          </button>
+          <div v-if="generatedCode" class="bg-white p-2 rounded border border-yellow-300 text-center">
+            <p class="text-xs text-gray-500">验证码: <span class="text-lg font-bold text-yellow-600">{{ generatedCode }}</span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 加载状态 -->
+    <div v-else class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+      <h2 class="text-xl font-bold text-gray-700">正在检查认证状态...</h2>
+    </div>
+
+    <!-- 认证弹窗（模态框） -->
+    <div v-if="showAuthModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in" @click.self="closeAuthModal">
+      <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 max-h-[90vh] overflow-y-auto relative animate-scale-in">
+        <!-- 关闭按钮 -->
+        <button @click="closeAuthModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl font-bold">✕</button>
+
+        <!-- 弹窗头部 -->
+        <div class="text-center mb-4">
+          <div class="text-4xl mb-1">📱</div>
+          <h2 class="text-xl font-bold text-gray-800">完成认证</h2>
+          <p class="text-gray-600 text-sm mt-1">关注公众号，获取验证码</p>
         </div>
 
         <!-- 操作步骤 -->
-        <div class="bg-blue-50 rounded-lg p-4 mb-6 space-y-3">
-          <div class="flex items-start gap-3">
-            <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
-            <span class="text-sm text-gray-700">扫码关注公众号</span>
+        <div class="bg-blue-50 rounded-lg p-3 mb-4 space-y-2">
+          <div class="flex items-start gap-2">
+            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">1</span>
+            <span class="text-xs text-gray-700">扫码关注公众号</span>
           </div>
-          <div class="flex items-start gap-3">
-            <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
-            <span class="text-sm text-gray-700">公众号会自动发送6位验证码</span>
+          <div class="flex items-start gap-2">
+            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">2</span>
+            <span class="text-xs text-gray-700">公众号自动发送6位验证码</span>
           </div>
-          <div class="flex items-start gap-3">
-            <span class="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
-            <span class="text-sm text-gray-700">在下方输入验证码完成认证</span>
+          <div class="flex items-start gap-2">
+            <span class="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">3</span>
+            <span class="text-xs text-gray-700">输入验证码完成认证</span>
           </div>
         </div>
 
-        <!-- 验证码输入区域 -->
-        <div class="bg-gray-50 rounded-lg p-4 mb-4">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            输入验证码
-          </label>
+        <!-- 验证码输入 -->
+        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+          <label class="block text-xs font-semibold text-gray-700 mb-1">输入验证码</label>
           <div class="flex gap-2">
             <input
               v-model="verificationCode"
-              placeholder="输入6位验证码"
+              placeholder="6位验证码"
               maxlength="6"
               @keyup.enter="verifyCode"
-              class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg text-center text-lg font-mono tracking-widest focus:outline-none focus:border-blue-500"
+              class="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-center text-base font-mono tracking-widest focus:outline-none focus:border-blue-500"
             />
             <button
               @click="verifyCode"
               :disabled="isVerifying || !verificationCode"
-              class="px-6 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-lg font-semibold transition whitespace-nowrap"
+              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-lg font-semibold transition text-sm whitespace-nowrap"
             >
               <span v-if="isVerifying">验证中...</span>
               <span v-else>验证</span>
             </button>
           </div>
-          <p class="text-xs text-gray-500 mt-2 text-center">验证码5分钟内有效</p>
+          <p class="text-xs text-gray-500 mt-1 text-center">验证码5分钟内有效</p>
         </div>
 
         <!-- 状态提示 -->
         <div
           v-if="message"
           :class="[
-            'p-3 rounded-lg text-sm text-center mb-4 animate-fade-in',
+            'p-2 rounded-lg text-xs text-center mb-3 animate-fade-in',
             message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
             message.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
             message.type === 'warning' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
@@ -108,66 +159,31 @@
         >
           没收到验证码？点击重新获取
         </button>
-      </div>
 
-      <!-- 说明 -->
-      <div class="mt-4 bg-white/90 backdrop-blur rounded-xl p-4 text-sm text-gray-700">
-        <h3 class="font-semibold mb-2">💡 使用说明</h3>
-        <ul class="list-disc list-inside space-y-1 opacity-80">
-          <li>本系统通过微信订阅号进行用户认证</li>
-          <li>关注公众号后会自动发送验证码</li>
-          <li>在网站输入验证码即可完成认证</li>
-        </ul>
-      </div>
+        <!-- 弹窗内的测试工具 -->
+        <div class="mt-3 pt-3 border-t border-gray-200">
+          <div class="flex items-center justify-between mb-2 cursor-pointer" @click="showTestTools = !showTestTools">
+            <span class="text-xs font-semibold text-yellow-700">🛠️ 开发测试工具</span>
+            <span class="text-xs px-2 py-1 bg-yellow-100 rounded">{{ showTestTools ? '隐藏' : '显示' }}</span>
+          </div>
 
-      <!-- 开发测试工具 -->
-      <div class="mt-4 bg-white/90 backdrop-blur rounded-xl p-4 text-sm text-gray-700 border-2 border-yellow-400">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="font-semibold">🛠️ 开发测试工具</h3>
-          <button
-            @click="showTestTools = !showTestTools"
-            class="text-xs px-2 py-1 bg-yellow-100 hover:bg-yellow-200 rounded transition"
-          >
-            {{ showTestTools ? '隐藏' : '显示' }}
-          </button>
-        </div>
-
-        <div v-if="showTestTools" class="space-y-3 mt-3">
-          <p class="text-xs text-gray-500 mb-2">未接入微信公众号时，可用此工具模拟测试</p>
-
-          <div class="bg-gray-100 p-3 rounded-lg space-y-2">
-            <div class="flex gap-2 items-center">
-              <span class="text-xs font-semibold w-20">测试OpenID:</span>
-              <input
-                v-model="testOpenid"
-                placeholder="oxxx_testuser"
-                class="flex-1 px-2 py-1 text-xs border rounded"
-              />
-            </div>
-
+          <div v-if="showTestTools" class="space-y-2">
+            <input
+              v-model="testOpenid"
+              placeholder="测试OpenID"
+              class="w-full px-2 py-1 text-xs border rounded"
+            />
             <button
               @click="simulateSubscribe"
               :disabled="isSimulating"
-              class="w-full py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 text-white rounded font-semibold transition"
+              class="w-full py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-300 text-white rounded font-semibold transition text-xs"
             >
-              <span v-if="isSimulating">模拟中...</span>
-              <span v-else>🎯 模拟关注公众号（生成验证码）</span>
+              {{ isSimulating ? '模拟中...' : '🎯 模拟关注公众号' }}
             </button>
-
-            <div v-if="generatedCode" class="bg-white p-3 rounded border border-yellow-300 text-center">
-              <p class="text-xs text-gray-500 mb-1">生成的验证码：</p>
-              <p class="text-2xl font-mono font-bold text-yellow-600">{{ generatedCode }}</p>
-              <p class="text-xs text-gray-500 mt-1">已自动填入输入框，可直接点击验证</p>
+            <div v-if="generatedCode" class="bg-white p-2 rounded border border-yellow-300 text-center">
+              <p class="text-xs text-gray-500">验证码: <span class="text-lg font-bold text-yellow-600">{{ generatedCode }}</span></p>
+              <p class="text-xs text-gray-500 mt-1">已自动填入，可直接验证</p>
             </div>
-          </div>
-
-          <div class="text-xs text-gray-500 bg-blue-50 p-2 rounded">
-            <p class="font-semibold mb-1">测试流程：</p>
-            <ol class="list-decimal list-inside space-y-1 ml-2">
-              <li>点击"模拟关注公众号"按钮</li>
-              <li>验证码会自动显示并填入</li>
-              <li>点击"验证"按钮完成登录</li>
-            </ol>
           </div>
         </div>
       </div>
@@ -181,6 +197,9 @@ const loading = ref(true);
 const verificationCode = ref('');
 const isVerifying = ref(false);
 const message = ref<{ type: string; text: string } | null>(null);
+
+// 弹窗状态
+const showAuthModal = ref(false);
 
 // 测试工具状态
 const showTestTools = ref(false);
@@ -234,6 +253,14 @@ const formatTime = (isoString: string) => {
   });
 };
 
+// 关闭认证弹窗
+const closeAuthModal = () => {
+  showAuthModal.value = false;
+  message.value = null;
+  verificationCode.value = '';
+  generatedCode.value = '';
+};
+
 const logout = async () => {
   if (confirm('确定要退出登录吗？')) {
     await $fetch('/api/auth/session', { method: 'DELETE' });
@@ -260,15 +287,25 @@ const verifyCode = async () => {
     if (result.authenticated) {
       // 认证成功
       session.value = result;
-      message.value = { type: 'success', text: '✅ 认证成功！正在跳转...' };
+      message.value = { type: 'success', text: '✅ 认证成功！' };
 
       // 保存openid到cookie（30天有效期）
       if (result.user.openid) {
         document.cookie = `wxauth-openid=${result.user.openid}; max-age=${30 * 24 * 60 * 60}; path=/; sameSite=lax`;
       }
 
+      // 设置 session（用于下次访问保持登录状态）
+      await $fetch('/api/auth/session', {
+        method: 'POST',
+        body: { user: result.user }
+      });
+
+      // 1秒后关闭弹窗，显示认证成功页面
       setTimeout(() => {
-        location.reload();
+        showAuthModal.value = false;
+        message.value = null;
+        verificationCode.value = '';
+        generatedCode.value = '';
       }, 1000);
     } else {
       const errorMsg = result.error === 'invalid_or_expired'
@@ -326,8 +363,13 @@ const simulateSubscribe = async () => {
 
       message.value = {
         type: 'success',
-        text: `✅ 模拟成功！验证码已生成并填入，可直接点击验证`
+        text: `✅ 模拟成功！验证码已生成，可直接验证`
       };
+
+      // 如果弹窗未打开，自动打开
+      if (!showAuthModal.value) {
+        showAuthModal.value = true;
+      }
     } else {
       message.value = { type: 'error', text: `❌ ${result.error}` };
     }
@@ -345,7 +387,17 @@ const simulateSubscribe = async () => {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease;
 }
 </style>
