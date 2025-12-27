@@ -74,6 +74,13 @@ export default defineEventHandler(async (event) => {
       if (isEncrypted) {
         // ========== 安全模式（加密消息）==========
         console.log('[WeChat] 检测到加密消息，使用安全模式处理');
+        console.log('[WeChat] 配置检查:', {
+          hasToken: !!config.token,
+          hasAppId: !!config.appId,
+          hasAesKey: !!config.aesKey,
+          appIdValue: config.appId,
+          aesKeyPreview: config.aesKey ? config.aesKey.substring(0, 10) + '...' : 'undefined'
+        });
 
         // 验证消息签名
         const encryptMatch = body.match(/<Encrypt><!\[CDATA\[(.*?)\]\]><\/Encrypt>/);

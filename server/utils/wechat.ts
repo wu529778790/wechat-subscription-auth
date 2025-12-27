@@ -57,8 +57,16 @@ export function decryptWeChatMessage(
     const appIdFromMsg = unpadded.slice(20 + msgLen).toString('utf8');
 
     // 6. 验证AppID
+    console.log('[Decrypt] 解析结果:', {
+      msgLen,
+      contentPreview: content.substring(0, 100),
+      appIdFromMsg,
+      expectedAppId: appId,
+      match: appIdFromMsg === appId
+    });
+
     if (appIdFromMsg !== appId) {
-      throw new Error('AppID验证失败');
+      throw new Error(`AppID验证失败: 期望[${appId}] 收到[${appIdFromMsg}]`);
     }
 
     return content;
