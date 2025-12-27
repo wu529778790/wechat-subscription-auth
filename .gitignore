@@ -17,6 +17,7 @@ dist
 *.db
 *.db-journal
 prisma/migrations
+data/
 
 # OS files
 .DS_Store

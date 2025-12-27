@@ -1,17 +1,39 @@
-# 微信订阅号认证系统 - Nuxt 4 极简版
+# 微信订阅号认证系统 - Nuxt 4
 
-> 🎯 **极简设计，无需数据库，开箱即用**
+> 🎯 **极简设计，持久化存储，开箱即用**
 
-这是一个基于 **Nuxt 4** 的微信订阅号认证系统，**关注公众号自动发送验证码**，用户输入验证码完成认证。**完全使用内存存储，无需配置数据库**。
+基于 **Nuxt 4** 的微信订阅号认证系统。关注公众号自动发送验证码，用户输入完成认证。
 
 ## ✨ 核心特性
 
-- ✅ **零数据库** - 纯内存存储，部署更简单
-- ✅ **自动发送** - 关注公众号立即收到验证码
-- ✅ **单页面** - 无需额外页面，体验更流畅
+- ✅ **持久化存储** - 重启不丢失数据
+- ✅ **自动发送验证码** - 关注立即收到
+- ✅ **单页面** - 无需额外页面
 - ✅ **自动清理** - 过期数据自动删除
 
-## 📋 工作流程（正确流程）
+## 📊 数据存储
+
+### 默认：JSON 文件存储
+```bash
+# 数据自动保存到 data/auth-data.json
+# 无需配置，重启后数据完整保留
+pnpm dev
+```
+
+### 可选：SQLite 数据库
+```bash
+# 1. 编译原生模块
+pnpm rebuild better-sqlite3
+
+# 2. 启用 SQLite
+STORAGE_TYPE=sqlite pnpm dev
+```
+
+**存储说明：**
+- `authCodes` - 临时验证码（5分钟过期）
+- `authenticatedUsers` - 已认证用户（持久保存）
+
+## 📋 工作流程
 
 ```
 用户访问网站
@@ -106,9 +128,12 @@ wechat-subscription-auth/
 │   │       ├── check.ts        # 验证码检查
 │   │       └── session.ts      # Session 管理
 │   └── utils/                   # 工具函数
-│       ├── storage.ts          # 内存存储
+│       ├── storage.ts          # 持久化存储（JSON/SQLite）
+│       ├── db.ts               # SQLite 数据库管理
 │       ├── wechat.ts           # 微信工具
 │       └── session.ts          # Session 工具
+├── data/                       # 数据目录（自动生成）
+│   └── auth-data.json         # 存储文件
 ├── pages/                       # 前端页面
 │   └── index.vue               # 单页认证（输入验证码）
 ├── app.vue                     # 根组件
@@ -299,27 +324,6 @@ https://your-main-site.com  # 主网站
    - 默认5分钟，可调整
    - 自动清理过期数据
 
-## ⚠️ 注意事项
-
-### 内存存储的限制
-
-- **重启后数据丢失** - 适合开发和小型项目
-- **单实例限制** - 多服务器部署需要共享存储
-- **生产环境建议** - 如需持久化，可添加 Redis 或数据库
-
-### 如何改为持久化存储？
-
-只需修改 `server/utils/storage.ts`：
-
-```typescript
-// 使用 Redis
-import redis from 'redis';
-
-export async function saveAuthCode(code, openid) {
-  await redis.setex(`auth:${code}`, 300, JSON.stringify({ openid }));
-}
-```
-
 ## 🐛 常见问题
 
 | 问题 | 原因 | 解决方案 |
@@ -331,10 +335,10 @@ export async function saveAuthCode(code, openid) {
 
 ## 📊 性能优化
 
-- ✅ **轻量级**：无数据库依赖
-- ✅ **快速响应**：内存存储，毫秒级查询
+- ✅ **轻量级**：文件存储，无需数据库
+- ✅ **快速响应**：内存缓存 + 持久化
 - ✅ **低资源消耗**：适合小型项目
-- ✅ **自动清理**：避免内存泄漏
+- ✅ **自动清理**：避免数据膨胀
 
 ## 🎯 与旧版对比
 
