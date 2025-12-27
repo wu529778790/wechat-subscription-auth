@@ -60,7 +60,7 @@ export default defineEventHandler(async (event) => {
       const body = await readBody(event);
       if (!body) return 'Empty body';
 
-      console.log('[WeChat] 收到原始消息:', body.substring(0, 200));
+      console.log('[WeChat] 收到原始消息 (v2):', body.substring(0, 200));
 
       // 判断是否是加密消息（安全模式）
       const isEncrypted = encrypt_type === 'aes' || body.includes('<Encrypt>');
