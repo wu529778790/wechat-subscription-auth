@@ -81,13 +81,18 @@ export default defineEventHandler(async (event) => {
 
         const encryptMsg = encryptMatch[1];
 
-        if (!msg_signature || !validateWeChatSignature(
+        // 微信安全模式签名验证：token + timestamp + nonce + encryptMsg 排序后 SHA1
+        const expectedSignature = generateSignature(
           config.token,
           timestamp as string,
           nonce as string,
           encryptMsg
-        )) {
+        );
+
+        if (!msg_signature || msg_signature !== expectedSignature) {
           console.log('[WeChat] 消息签名验证失败');
+          console.log(`[WeChat] 期望签名: ${expectedSignature}`);
+          console.log(`[WeChat] 收到签名: ${msg_signature}`);
           return 'Invalid signature';
         }
 
