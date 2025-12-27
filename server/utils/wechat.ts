@@ -56,13 +56,21 @@ export function decryptWeChatMessage(
     const content = unpadded.slice(20, 20 + msgLen).toString('utf8');
     const appIdFromMsg = unpadded.slice(20 + msgLen).toString('utf8');
 
-    // 6. 验证AppID
-    console.log('[Decrypt] 解析结果:', {
+    // 6. 验证AppID - 调试信息
+    console.log('[Decrypt] 调试信息:', {
+      unpaddedLength: unpadded.length,
+      unpaddedHex: unpadded.toString('hex').substring(0, 100) + '...',
       msgLen,
+      msgLenHex: unpadded.slice(16, 20).toString('hex'),
+      contentLength: content.length,
       contentPreview: content.substring(0, 100),
       appIdFromMsg,
       expectedAppId: appId,
-      match: appIdFromMsg === appId
+      match: appIdFromMsg === appId,
+      sliceStart: 20 + msgLen,
+      sliceEnd: unpadded.length,
+      remainingBytes: unpadded.slice(20 + msgLen),
+      remainingHex: unpadded.slice(20 + msgLen).toString('hex')
     });
 
     if (appIdFromMsg !== appId) {
