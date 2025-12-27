@@ -58,9 +58,9 @@ cp .env.example .env
 SITE_URL=https://your-website.com
 
 # 微信公众号配置
-WECHAT_APPID=你的公众号AppID
-WECHAT_APPSECRET=你的公众号AppSecret
-WECHAT_TOKEN=你的服务器Token
+WECHAT_APPID=你的公众号AppID（可选）
+WECHAT_APPSECRET=（未认证订阅号无需填写）
+WECHAT_TOKEN=你的服务器Token（必须）
 
 # Session密钥（生产环境使用随机字符串）
 SESSION_SECRET=随机生成的密钥

@@ -42,10 +42,12 @@ cp .env.example .env
 
 **必须配置的项：**
 - `SITE_URL` - 网站地址（如：https://your-website.com）
-- `WECHAT_APPID` - 公众号 AppID
-- `WECHAT_APPSECRET` - 公众号 AppSecret
-- `WECHAT_TOKEN` - 服务器 Token（与微信后台一致）
+- `WECHAT_TOKEN` - 服务器 Token（与微信后台一致，**最重要**）
 - `SESSION_SECRET` - 随机密钥（运行 `openssl rand -hex 32` 生成）
+
+**可选配置：**
+- `WECHAT_APPID` - 公众号 AppID（仅用于记录）
+- `WECHAT_APPSECRET` - 未认证订阅号无需填写
 
 ### 3. 启动开发服务器
 
@@ -213,10 +215,10 @@ openssl rand -hex 32
 | 变量名 | 必填 | 说明 | 示例 |
 |--------|------|------|------|
 | `SITE_URL` | ✅ | 网站地址 | `https://your.com` |
-| `WECHAT_APPID` | ✅ | 公众号ID | `wx1234567890` |
-| `WECHAT_APPSECRET` | ✅ | 公众号密钥 | `abc123def456` |
 | `WECHAT_TOKEN` | ✅ | 服务器Token | `mytoken123` |
 | `SESSION_SECRET` | ✅ | Session密钥 | `随机32位hex` |
+| `WECHAT_APPID` | ❌ | 公众号ID | `wx1234567890` |
+| `WECHAT_APPSECRET` | ❌ | 公众号密钥（未认证无需） | - |
 | `CODE_EXPIRY` | ❌ | 验证码有效期(秒) | `300` (默认) |
 
 ## 🐛 调试技巧
