@@ -230,7 +230,7 @@ export function generateVerificationCode(): string {
  * 支持模糊匹配，处理可能的编码问题
  */
 export function containsAuthKeyword(content: string): boolean {
-  const keywords = ['已关注', '认证', '验证', 'login', '已订阅', '关注了', '验证码'];
+  const keywords = ['已关注', '认证', '验证', 'login', '已订阅', '关注了', '验证码', '1'];
 
   // 1. 精确匹配
   if (keywords.some(k => content.includes(k))) {
