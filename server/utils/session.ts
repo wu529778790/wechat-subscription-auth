@@ -80,7 +80,7 @@ function decryptSession(encrypted: string, secret: string): string {
 /**
  * 获取或创建 Session
  */
-export async function useSession(event: H3Event, config?: Partial<SessionConfig>) {
+export async function createSession(event: H3Event, config?: Partial<SessionConfig>) {
   const cfg = { ...defaultConfig, ...config };
   const cookieName = cfg.name;
 
@@ -133,7 +133,7 @@ export async function useSession(event: H3Event, config?: Partial<SessionConfig>
  * 检查用户是否已登录（服务端调用）
  */
 export async function isAuthenticated(event: H3Event): Promise<boolean> {
-  const session = await useSession(event);
+  const session = await createSession(event);
   return session.value.authenticated === true;
 }
 
@@ -141,6 +141,6 @@ export async function isAuthenticated(event: H3Event): Promise<boolean> {
  * 获取当前用户信息
  */
 export async function getCurrentUser(event: H3Event) {
-  const session = await useSession(event);
+  const session = await createSession(event);
   return session.value.user || null;
 }

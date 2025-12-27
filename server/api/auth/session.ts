@@ -1,7 +1,7 @@
 // Session 管理 API - 极简版
 // 路由: /api/auth/session
 
-import { useSession } from '~/server/utils/session';
+import { createSession } from '~/server/utils/session';
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const session = await useSession(event);
+    const session = await createSession(event);
     await session.update({
       authenticated: true,
       user: {
@@ -35,13 +35,13 @@ export default defineEventHandler(async (event) => {
 
   // 获取 Session
   if (method === 'GET') {
-    const session = await useSession(event);
+    const session = await createSession(event);
     return session.value;
   }
 
   // 清除 Session（登出）
   if (method === 'DELETE') {
-    const session = await useSession(event);
+    const session = await createSession(event);
     await session.clear();
     return { success: true };
   }
