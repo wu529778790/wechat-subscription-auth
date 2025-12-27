@@ -140,12 +140,17 @@ export default defineEventHandler(async (event) => {
         }
         // 认证关键词 - 重新发送验证码
         else if (containsAuthKeyword(content)) {
+          console.log('[WeChat] 开始处理认证关键词，content:', content);
           const existingCode = generateVerificationCode();
-          saveAuthCode(existingCode, FromUserName);
-
-          console.log(`[WeChat] 用户 ${FromUserName} 请求验证码，重新生成 ${existingCode}`);
-
-          replyMsg = generateCodeMessage(existingCode);
+          console.log('[WeChat] 生成的验证码:', existingCode);
+          try {
+            saveAuthCode(existingCode, FromUserName);
+            console.log(`[WeChat] 用户 ${FromUserName} 请求验证码，重新生成 ${existingCode}`);
+            replyMsg = generateCodeMessage(existingCode);
+          } catch (e) {
+            console.error('[WeChat] 保存验证码失败:', e);
+            replyMsg = '系统错误，请稍后重试';
+          }
         }
         // 默认回复
         else {
