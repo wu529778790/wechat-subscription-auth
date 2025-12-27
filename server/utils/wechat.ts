@@ -13,6 +13,156 @@ export interface WeChatMessage {
 }
 
 /**
+ * 微信消息加解密（安全模式）
+ * 参考：微信官方文档 - 消息加解密
+ */
+
+// 生成随机16位字节
+function getRandomBytes(): Buffer {
+  return crypto.randomBytes(16);
+}
+
+/**
+ * 解密微信消息（安全模式）
+ * @param encryptMsg 加密的消息体
+ * @param aesKey EncodingAESKey（43位字符）
+ * @param appId 公众号AppID
+ */
+export function decryptWeChatMessage(
+  encryptMsg: string,
+  aesKey: string,
+  appId: string
+): string {
+  try {
+    // 1. EncodingAESKey 转换为 32字节AES密钥
+    // 微信的 EncodingAESKey 是43位Base64字符，需要添加 '=' 补全为44位
+    const key = Buffer.from(aesKey + '=', 'base64');
+    const iv = key.slice(0, 16);
+    const cipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+
+    // 2. Base64解码
+    const encrypted = Buffer.from(encryptMsg, 'base64');
+
+    // 3. 解密
+    let decrypted = cipher.update(encrypted);
+    decrypted = Buffer.concat([decrypted, cipher.final()]);
+
+    // 4. 去除 PKCS#7 填充
+    const padLen = decrypted[decrypted.length - 1];
+    const unpadded = decrypted.slice(0, decrypted.length - padLen);
+
+    // 5. 解析报文格式：随机16字节 + 消息长度(4字节) + 消息内容 + AppID
+    const msgLen = unpadded.readUInt32BE(16);
+    const content = unpadded.slice(20, 20 + msgLen).toString('utf8');
+    const appIdFromMsg = unpadded.slice(20 + msgLen).toString('utf8');
+
+    // 6. 验证AppID
+    if (appIdFromMsg !== appId) {
+      throw new Error('AppID验证失败');
+    }
+
+    return content;
+  } catch (error) {
+    console.error('解密失败:', error);
+    throw new Error('消息解密失败');
+  }
+}
+
+/**
+ * 加密回复消息（安全模式）
+ * @param replyMsg 明文回复消息
+ * @param aesKey EncodingAESKey（43位字符）
+ * @param appId 公众号AppID
+ */
+export function encryptWeChatReply(
+  replyMsg: string,
+  aesKey: string,
+  appId: string
+): string {
+  try {
+    // 1. EncodingAESKey 转换为 32字节AES密钥
+    const key = Buffer.from(aesKey + '=', 'base64');
+    const iv = key.slice(0, 16);
+
+    // 2. 准备报文内容
+    // 格式：随机16字节 + 消息长度(4字节, 网络字节序) + 消息内容 + AppID
+    const randomBytes = getRandomBytes();
+    const msgLen = Buffer.alloc(4);
+    msgLen.writeUInt32BE(Buffer.from(replyMsg, 'utf8').length, 0);
+
+    const appIdBuffer = Buffer.from(appId, 'utf8');
+
+    // 3. 拼接报文
+    const content = Buffer.concat([
+      randomBytes,
+      msgLen,
+      Buffer.from(replyMsg, 'utf8'),
+      appIdBuffer
+    ]);
+
+    // 4. PKCS#7 填充
+    const blockSize = 32;
+    const padLen = blockSize - (content.length % blockSize);
+    const padding = Buffer.alloc(padLen, padLen);
+    padding.fill(padLen);
+    const paddedContent = Buffer.concat([content, padding]);
+
+    // 5. AES-256-CBC 加密
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+    let encrypted = cipher.update(paddedContent);
+    encrypted = Buffer.concat([encrypted, cipher.final()]);
+
+    // 6. Base64编码
+    return encrypted.toString('base64');
+  } catch (error) {
+    console.error('加密失败:', error);
+    throw new Error('消息加密失败');
+  }
+}
+
+/**
+ * 生成安全模式的回复XML
+ */
+export function generateEncryptedWeChatReply(
+  encryptMsg: string,
+  signature: string,
+  timestamp: string,
+  nonce: string
+): string {
+  const builder = new XMLBuilder({
+    ignoreAttributes: false,
+    attributeNamePrefix: '',
+    format: false,
+    suppressEmptyNode: true
+  });
+
+  const xmlObj = {
+    xml: {
+      Encrypt: { '#cdata': encryptMsg },
+      MsgSignature: { '#cdata': signature },
+      TimeStamp: timestamp,
+      Nonce: nonce
+    }
+  };
+
+  return builder.build(xmlObj);
+}
+
+/**
+ * 生成签名（用于加密消息回复）
+ */
+export function generateSignature(
+  token: string,
+  timestamp: string,
+  nonce: string,
+  encryptMsg: string
+): string {
+  const arr = [token, timestamp, nonce, encryptMsg].sort();
+  const str = arr.join('');
+  return crypto.createHash('sha1').update(str).digest('hex');
+}
+
+/**
  * 验证微信消息签名
  */
 export function validateWeChatSignature(
