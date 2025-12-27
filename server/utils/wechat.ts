@@ -145,23 +145,17 @@ export function generateEncryptedWeChatReply(
   timestamp: string,
   nonce: string
 ): string {
-  const builder = new XMLBuilder({
-    ignoreAttributes: false,
-    attributeNamePrefix: '',
-    format: false,
-    suppressEmptyNode: true
-  });
+  // 手动构建 XML 以确保正确的 CDATA 格式
+  const cdata = (text: string) => `<![CDATA[${text}]]>`;
 
-  const xmlObj = {
-    xml: {
-      Encrypt: { '#cdata': encryptMsg },
-      MsgSignature: { '#cdata': signature },
-      TimeStamp: timestamp,
-      Nonce: nonce
-    }
-  };
+  let xml = '<xml>';
+  xml += `<Encrypt>${cdata(encryptMsg)}</Encrypt>`;
+  xml += `<MsgSignature>${cdata(signature)}</MsgSignature>`;
+  xml += `<TimeStamp>${timestamp}</TimeStamp>`;
+  xml += `<Nonce>${nonce}</Nonce>`;
+  xml += '</xml>';
 
-  return builder.build(xmlObj);
+  return xml;
 }
 
 /**
@@ -212,26 +206,22 @@ export function parseWeChatMessage(xml: string): WeChatMessage {
  * 生成微信 XML 回复消息
  */
 export function generateWeChatReply(message: WeChatMessage): string {
-  const builder = new XMLBuilder({
-    ignoreAttributes: false,
-    attributeNamePrefix: '',
-    format: false,
-    suppressEmptyNode: true
-  });
+  // 手动构建 XML 以确保正确的 CDATA 格式
+  const cdata = (text: string) => `<![CDATA[${text}]]>`;
 
-  const xmlObj = {
-    xml: {
-      ToUserName: { '#cdata': message.ToUserName },
-      FromUserName: { '#cdata': message.FromUserName },
-      CreateTime: message.CreateTime,
-      MsgType: { '#cdata': message.MsgType },
-      ...(message.MsgType === 'text' && message.Content ? {
-        Content: { '#cdata': message.Content }
-      } : {})
-    }
-  };
+  let xml = '<xml>';
+  xml += `<ToUserName>${cdata(message.ToUserName)}</ToUserName>`;
+  xml += `<FromUserName>${cdata(message.FromUserName)}</FromUserName>`;
+  xml += `<CreateTime>${message.CreateTime}</CreateTime>`;
+  xml += `<MsgType>${cdata(message.MsgType)}</MsgType>`;
 
-  return builder.build(xmlObj);
+  if (message.MsgType === 'text' && message.Content) {
+    xml += `<Content>${cdata(message.Content)}</Content>`;
+  }
+
+  xml += '</xml>';
+
+  return xml;
 }
 
 /**
