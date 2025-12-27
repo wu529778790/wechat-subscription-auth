@@ -17,13 +17,13 @@ import {
   encryptWeChatReply,
   generateEncryptedWeChatReply,
   generateSignature
-} from '~/server/utils/wechat';
+} from '../../utils/wechat';
 import {
   saveAuthCode,
   getUserByAuthCode,
   deleteAuthCode,
   markUserAuthenticated
-} from '~/server/utils/storage';
+} from '../../utils/storage';
 
 export default defineEventHandler(async (event) => {
   const method = getMethod(event);
