@@ -56,6 +56,8 @@ export default defineEventHandler(async (event) => {
   if (method === 'POST') {
     const { signature, timestamp, nonce, encrypt_type, msg_signature } = getQuery(event);
 
+    console.log('[WeChat] URL参数:', { signature, timestamp, nonce, encrypt_type, msg_signature });
+
     try {
       const body = await readBody(event);
       if (!body) return 'Empty body';
