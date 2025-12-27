@@ -1,14 +1,10 @@
-// 持久化存储方案
-// 默认使用 JSON 文件存储（无需编译，兼容性好）
-// 可选使用 SQLite（性能更好，需要编译原生模块）
+// JSON 文件存储 - 持久化方案（无需编译原生模块）
+// 数据存储在 JSON 文件中，重启后不会丢失
 
 import fs from 'fs';
 import path from 'path';
 
-// 配置：使用哪种存储方式
-const STORAGE_TYPE = process.env.STORAGE_TYPE || 'file'; // 'file' 或 'sqlite'
-
-// 数据文件路径（JSON）
+// 数据文件路径
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'auth-data.json');
 
@@ -275,4 +271,4 @@ setInterval(cleanupExpiredData, 60 * 1000);
 // 程序启动时也清理一次
 cleanupExpiredData();
 
-console.log(`[Storage] 持久化存储已初始化 (类型: ${STORAGE_TYPE})`);
+console.log('[Storage] JSON 文件存储已初始化');
