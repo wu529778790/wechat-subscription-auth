@@ -26,8 +26,10 @@ import {
 } from '../../utils/storage';
 
 export default defineEventHandler(async (event) => {
+  console.log('=== 微信消息API被调用 ===');
   const method = getMethod(event);
   const config = useRuntimeConfig().wechat;
+  console.log('方法:', method, 'Token:', config.token);
 
   // 验证配置
   if (!config.token) {
@@ -112,11 +114,14 @@ export default defineEventHandler(async (event) => {
 
       const { MsgType, Event, FromUserName, ToUserName, Content } = message;
 
+      console.log('[WeChat] 消息详情:', { MsgType, Event, FromUserName, Content });
+
       // 处理消息逻辑
       let replyMsg = '';
 
       // 关注事件 - 核心逻辑：自动发送验证码
       if (MsgType === 'event' && Event === 'subscribe') {
+        console.log('[WeChat] 处理关注事件');
         const code = generateVerificationCode();
         saveAuthCode(code, FromUserName);
 
@@ -129,17 +134,21 @@ export default defineEventHandler(async (event) => {
 
       } else if (MsgType === 'text') {
         const content = (Content || '').trim();
+        console.log('[WeChat] 文本消息内容:', content);
 
         // 状态查询
         if (isStatusKeyword(content)) {
+          console.log('[WeChat] 匹配状态关键词');
           replyMsg = generateStatusMessage(FromUserName);
         }
         // 帮助信息
         else if (isHelpKeyword(content)) {
+          console.log('[WeChat] 匹配帮助关键词');
           replyMsg = generateHelpMessage();
         }
         // 认证关键词 - 重新发送验证码
         else if (containsAuthKeyword(content)) {
+          console.log('[WeChat] 匹配认证关键词');
           const existingCode = generateVerificationCode();
           saveAuthCode(existingCode, FromUserName);
 
@@ -149,6 +158,7 @@ export default defineEventHandler(async (event) => {
         }
         // 默认回复
         else {
+          console.log('[WeChat] 未匹配任何关键词，返回默认回复');
           replyMsg = '欢迎！如果您需要重新获取验证码，请发送"已关注"或"认证"。';
         }
       }
