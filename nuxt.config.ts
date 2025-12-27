@@ -30,6 +30,10 @@ export default defineNuxtConfig({
     // 公开配置（客户端可用）
     public: {
       siteUrl: process.env.SITE_URL || 'http://localhost:3000',
+      // 公众号名称（用于前端显示）
+      wechatName: process.env.WECHAT_NAME || '我的公众号',
+      // 公众号二维码URL（用于前端显示）
+      wechatQrcodeUrl: process.env.WECHAT_QRCODE_URL || '',
       // 多公众号配置（支持多个订阅号）
       wechatAccounts: JSON.parse(process.env.WECHAT_ACCOUNTS || '[]')
     },
@@ -39,7 +43,11 @@ export default defineNuxtConfig({
       appId: process.env.WECHAT_APPID,
       appSecret: process.env.WECHAT_APPSECRET,
       token: process.env.WECHAT_TOKEN,
-      aesKey: process.env.WECHAT_AES_KEY || ''
+      aesKey: process.env.WECHAT_AES_KEY || '',
+      // 公众号名称（服务端使用）
+      name: process.env.WECHAT_NAME || '我的公众号',
+      // 公众号二维码URL（服务端使用）
+      qrcodeUrl: process.env.WECHAT_QRCODE_URL || ''
     },
     session: {
       secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',

@@ -139,9 +139,10 @@ const verificationCode = ref('');
 const isVerifying = ref(false);
 const message = ref<{ type: string; text: string } | null>(null);
 
-// 配置信息
-const wechatName = ref('你的公众号名称'); // 修改为你的公众号名称
-const qrcodeUrl = ref(''); // 如果有二维码图片URL，填在这里
+// 配置信息 - 从环境变量读取
+const config = useRuntimeConfig();
+const wechatName = ref(config.public.wechatName || '我的公众号');
+const qrcodeUrl = ref(config.public.wechatQrcodeUrl || '');
 
 // 检查是否有保存的openid（已认证过的用户）
 function getSavedOpenid(): string | null {

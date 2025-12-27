@@ -31,15 +31,26 @@
 
 ### 第5步：更新本地配置
 
-将 EncodingAESKey 填入 `.env` 文件：
+将 EncodingAESKey 和公众号信息填入 `.env` 文件：
 
 ```bash
-# 打开 .env 文件，找到这一行
+# 打开 .env 文件，找到这些行
+
+# 公众号名称（用于前端显示）
+WECHAT_NAME=我的公众号
+
+# 公众号二维码URL（可选，用于前端显示二维码）
+# 可以是图片URL或Base64，留空则显示默认占位图
+WECHAT_QRCODE_URL=
+
+# EncodingAESKey（粘贴微信生成的43位字符）
 WECHAT_AES_KEY=在这里粘贴微信生成的43位字符
 ```
 
 **示例：**
-```
+```env
+WECHAT_NAME=我的公众号
+WECHAT_QRCODE_URL=https://your-domain.com/qrcode.jpg
 WECHAT_AES_KEY=abcdefghijklmnopqrstuvwxyz1234567890ABC
 ```
 
@@ -93,6 +104,8 @@ SESSION_SECRET=[YOUR_SESSION_SECRET]
 # 2. 微信公众号配置
 # ============================================
 WECHAT_TOKEN=[YOUR_WECHAT_TOKEN]
+WECHAT_NAME=我的公众号
+WECHAT_QRCODE_URL=
 
 # ============================================
 # 3. 消息加解密配置（安全模式）

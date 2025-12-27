@@ -79,6 +79,13 @@ SITE_URL=https://your-website.com
 # 服务器 Token（必须，与微信后台一致）
 WECHAT_TOKEN=your-wechat-token
 
+# 公众号名称（必须，用于前端显示）
+WECHAT_NAME=我的公众号
+
+# 公众号二维码URL（可选，用于前端显示二维码）
+# 可以是图片URL或Base64，留空则显示默认占位图
+WECHAT_QRCODE_URL=
+
 # Session密钥（必须，生产环境使用随机字符串）
 SESSION_SECRET=openssl rand -hex 32
 
