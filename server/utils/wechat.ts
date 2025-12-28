@@ -219,7 +219,8 @@ export function generateVerificationCode(): string {
  * 检查消息内容是否包含关键词
  */
 export function containsAuthKeyword(content: string): boolean {
-  const keywords = ['已关注', '认证', '验证', 'login', '已订阅', '关注了', '验证码', '1'];
+  const config = useRuntimeConfig();
+  const keywords = config.keywords.auth;
   return keywords.some(k => content.includes(k));
 }
 
@@ -227,7 +228,8 @@ export function containsAuthKeyword(content: string): boolean {
  * 检查是否是状态查询关键词
  */
 export function isStatusKeyword(content: string): boolean {
-  const keywords = ['状态', 'status', '查询'];
+  const config = useRuntimeConfig();
+  const keywords = config.keywords.status;
   return keywords.some(k => content.includes(k));
 }
 
@@ -235,7 +237,8 @@ export function isStatusKeyword(content: string): boolean {
  * 检查是否是帮助关键词
  */
 export function isHelpKeyword(content: string): boolean {
-  const keywords = ['帮助', 'help', '怎么', '如何'];
+  const config = useRuntimeConfig();
+  const keywords = config.keywords.help;
   return keywords.some(k => content.includes(k));
 }
 
@@ -271,17 +274,22 @@ export function generateCodeMessage(code: string): string {
  * 生成帮助消息
  */
 export function generateHelpMessage(): string {
+  const config = useRuntimeConfig();
+  const authKeywords = config.keywords.auth.join(', ');
+  const statusKeywords = config.keywords.status.join(', ');
+  const helpKeywords = config.keywords.help.join(', ');
+
   return `认证流程帮助：
 
 1. 关注公众号
-2. 发送关键词【已关注】或【认证】
+2. 发送关键词【${config.keywords.auth[0]}】或【${config.keywords.auth[1]}】
 3. 获得6位认证码
 4. 在网站输入认证码完成登录
 
 支持关键词：
-- 已关注, 认证, 验证, login
-- 状态 - 查询认证状态
-- 帮助 - 查看此帮助
+- 认证: ${authKeywords}
+- 状态查询: ${statusKeywords}
+- 帮助: ${helpKeywords}
 
 如有问题，请联系管理员。`;
 }
