@@ -55,23 +55,32 @@
         </div>
 
         <!-- 验证码输入 -->
-        <div class="space-y-2">
-          <div class="flex gap-2">
+        <div class="space-y-3">
+          <!-- 6位验证码输入格子 -->
+          <div class="flex gap-2 justify-center">
             <input
-              v-model="verificationCode"
-              placeholder="输入6位验证码"
-              maxlength="6"
+              v-for="i in 6"
+              :key="i"
+              :ref="el => { if (el) inputRefs[i-1] = el }"
+              v-model="codeInputs[i-1]"
+              maxlength="1"
+              @input="(e) => handleInput(e, i-1)"
+              @keydown="(e) => handleKeydown(e, i-1)"
               @keyup.enter="verifyCode"
-              class="flex-1 px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-center text-base font-mono focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition"
+              @paste="handlePaste"
+              class="w-11 h-14 sm:w-12 sm:h-16 bg-white border-2 border-gray-300 rounded-lg text-center text-2xl font-mono font-bold focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition"
+              :class="{'border-green-500': codeInputs[i-1]}"
             />
-            <button
-              @click="verifyCode"
-              :disabled="isVerifying || !verificationCode"
-              class="px-5 py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition shadow-sm"
-            >
-              {{ isVerifying ? '验证中' : '验证' }}
-            </button>
           </div>
+
+          <!-- 验证按钮 -->
+          <button
+            @click="verifyCode"
+            :disabled="isVerifying || !isCodeComplete"
+            class="w-full py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition shadow-sm text-base"
+          >
+            {{ isVerifying ? '验证中...' : '验证' }}
+          </button>
 
           <!-- 消息提示 -->
           <div v-if="message" :class="[
@@ -92,12 +101,91 @@
 const session = ref<any>(null);
 const loading = ref(true);
 const verificationCode = ref('');
+const codeInputs = ref<string[]>(['', '', '', '', '', '']);
+const inputRefs = ref<any[]>([]);
 const isVerifying = ref(false);
 const message = ref<{ type: string; text: string } | null>(null);
 
 const config = useRuntimeConfig();
 const wechatName = ref(config.public.wechatName || '我的公众号');
 const qrcodeUrl = ref(config.public.wechatQrcodeUrl || '');
+
+// 计算属性：验证码是否完整
+const isCodeComplete = computed(() => {
+  return codeInputs.value.every(code => code !== '') && codeInputs.value.join('').length === 6;
+});
+
+// 处理输入
+const handleInput = (e: Event, index: number) => {
+  const value = (e.target as HTMLInputElement).value;
+
+  // 只允许数字
+  if (!/^\d*$/.test(value)) {
+    codeInputs.value[index] = '';
+    return;
+  }
+
+  // 如果输入了内容，自动聚焦到下一个输入框
+  if (value && index < 5) {
+    setTimeout(() => {
+      inputRefs.value[index + 1]?.focus();
+    }, 10);
+  }
+
+  // 更新完整验证码
+  verificationCode.value = codeInputs.value.join('');
+};
+
+// 处理键盘事件
+const handleKeydown = (e: KeyboardEvent, index: number) => {
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    if (!codeInputs.value[index] && index > 0) {
+      // 当前为空，删除前一个
+      codeInputs.value[index - 1] = '';
+      setTimeout(() => {
+        inputRefs.value[index - 1]?.focus();
+      }, 10);
+    } else if (codeInputs.value[index]) {
+      // 清空当前
+      codeInputs.value[index] = '';
+    }
+  } else if (e.key === 'ArrowLeft' && index > 0) {
+    e.preventDefault();
+    inputRefs.value[index - 1]?.focus();
+  } else if (e.key === 'ArrowRight' && index < 5) {
+    e.preventDefault();
+    inputRefs.value[index + 1]?.focus();
+  }
+};
+
+// 处理粘贴
+const handlePaste = (e: ClipboardEvent) => {
+  e.preventDefault();
+  const pasteData = e.clipboardData?.getData('text').replace(/\D/g, '');
+  if (pasteData) {
+    const chars = pasteData.split('').slice(0, 6);
+    chars.forEach((char, index) => {
+      if (index < 6) {
+        codeInputs.value[index] = char;
+      }
+    });
+    verificationCode.value = codeInputs.value.join('');
+
+    // 聚焦到最后一个有内容的输入框或第一个空的输入框
+    const lastIndex = Math.min(chars.length - 1, 5);
+    setTimeout(() => {
+      inputRefs.value[lastIndex]?.focus();
+    }, 10);
+  }
+};
+
+// 监听verificationCode变化，同步到codeInputs（用于外部设置）
+watch(verificationCode, (newVal) => {
+  if (newVal.length === 6) {
+    const chars = newVal.split('');
+    codeInputs.value = [...chars, ...Array(6 - chars.length).fill('')];
+  }
+});
 
 // 检查cookie中的openid
 function getSavedOpenid(): string | null {
@@ -133,7 +221,9 @@ const logout = async () => {
 };
 
 const verifyCode = async () => {
-  if (!verificationCode.value || verificationCode.value.length !== 6) {
+  const code = codeInputs.value.join('');
+
+  if (!code || code.length !== 6) {
     message.value = { type: 'error', text: '请输入6位验证码' };
     return;
   }
@@ -142,7 +232,7 @@ const verifyCode = async () => {
   message.value = null;
 
   try {
-    const result = await $fetch('/api/auth/check', { query: { authToken: verificationCode.value } });
+    const result = await $fetch('/api/auth/check', { query: { authToken: code } });
 
     if (result.authenticated) {
       session.value = result;
@@ -156,7 +246,11 @@ const verifyCode = async () => {
       setTimeout(() => location.reload(), 1000);
     } else {
       message.value = { type: 'error', text: result.error === 'invalid_or_expired' ? '验证码已过期' : '验证码错误' };
+      // 清空所有输入框
+      codeInputs.value = ['', '', '', '', '', ''];
       verificationCode.value = '';
+      // 聚焦到第一个输入框
+      setTimeout(() => inputRefs.value[0]?.focus(), 100);
     }
   } catch (error) {
     message.value = { type: 'error', text: '验证失败，请重试' };
