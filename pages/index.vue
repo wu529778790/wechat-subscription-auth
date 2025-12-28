@@ -17,52 +17,73 @@
     </div>
 
     <!-- 认证弹窗 -->
-    <div v-else class="w-full max-w-md bg-white rounded-xl shadow-xl p-6 border border-gray-200 animate-fade-in">
+    <div v-else class="w-full max-w-md bg-white rounded-xl shadow-xl border border-gray-200 animate-fade-in">
 
-      <!-- 二维码 -->
-      <div class="mb-5 text-center">
-        <div class="w-28 h-28 mx-auto bg-gray-50 rounded-lg flex items-center justify-center mb-2 border border-gray-200">
-          <img v-if="qrcodeUrl" :src="qrcodeUrl" alt="扫码关注" class="w-full h-full object-contain p-2" />
-          <div v-else class="text-gray-400 text-sm">📷<br/>二维码</div>
-        </div>
-        <p class="text-sm text-gray-600">
-          微信扫码关注 <span class="font-mono text-blue-600 font-semibold">"{{ wechatName }}"</span>
-        </p>
+      <!-- 标题栏 -->
+      <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 rounded-t-xl">
+        <h2 class="text-lg font-bold text-gray-800">微信认证</h2>
+        <p class="text-xs text-gray-500 mt-1">请按以下步骤完成认证</p>
       </div>
 
-      <!-- 验证码输入 -->
-      <div class="space-y-3">
-        <div class="flex gap-2">
-          <input
-            v-model="verificationCode"
-            placeholder="输入6位验证码"
-            maxlength="6"
-            @keyup.enter="verifyCode"
-            class="flex-1 px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-center text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-          />
-          <button
-            @click="verifyCode"
-            :disabled="isVerifying || !verificationCode"
-            class="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition shadow-sm"
-          >
-            {{ isVerifying ? '验证中' : '验证' }}
-          </button>
+      <!-- 内容区域 -->
+      <div class="p-6 space-y-4">
+
+        <!-- 二维码 -->
+        <div class="text-center">
+          <div class="w-24 h-24 mx-auto bg-white rounded-lg flex items-center justify-center mb-2 border border-gray-200">
+            <img v-if="qrcodeUrl" :src="qrcodeUrl" alt="扫码关注" class="w-full h-full object-contain p-2" />
+            <div v-else class="text-gray-400 text-sm">📷<br/>二维码</div>
+          </div>
+          <p class="text-sm text-gray-600">
+            微信扫码关注 <span class="font-mono text-blue-600 font-semibold">"{{ wechatName }}"</span>
+          </p>
         </div>
 
-        <!-- 消息提示 -->
-        <div v-if="message" :class="[
-          'p-3 rounded-lg text-sm text-center border',
-          message.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
-          message.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
-          'bg-blue-50 text-blue-700 border-blue-200'
-        ]">
-          {{ message.text }}
+        <!-- 步骤说明 - 简化版 -->
+        <div class="bg-gray-50 rounded-lg p-3 space-y-2">
+          <div class="flex items-start gap-2 text-sm">
+            <span class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs mt-0.5">1</span>
+            <span class="text-gray-700">扫码关注公众号</span>
+          </div>
+          <div class="flex items-start gap-2 text-sm">
+            <span class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs mt-0.5">2</span>
+            <span class="text-gray-700">发送"验证码"获取数字</span>
+          </div>
+          <div class="flex items-start gap-2 text-sm">
+            <span class="w-5 h-5 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xs mt-0.5">3</span>
+            <span class="text-gray-700">输入完成认证</span>
+          </div>
         </div>
 
-        <!-- 提示 -->
-        <p class="text-xs text-gray-400 text-center pt-1">
-          在公众号发送"验证码"获取
-        </p>
+        <!-- 验证码输入 -->
+        <div class="space-y-2">
+          <div class="flex gap-2">
+            <input
+              v-model="verificationCode"
+              placeholder="输入6位验证码"
+              maxlength="6"
+              @keyup.enter="verifyCode"
+              class="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-lg text-center text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+            />
+            <button
+              @click="verifyCode"
+              :disabled="isVerifying || !verificationCode"
+              class="px-5 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white rounded-lg font-medium transition shadow-sm"
+            >
+              {{ isVerifying ? '验证中' : '验证' }}
+            </button>
+          </div>
+
+          <!-- 消息提示 -->
+          <div v-if="message" :class="[
+            'p-2 rounded-lg text-sm text-center border',
+            message.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' :
+            message.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' :
+            'bg-blue-50 text-blue-700 border-blue-200'
+          ]">
+            {{ message.text }}
+          </div>
+        </div>
       </div>
     </div>
   </div>
