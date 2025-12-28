@@ -64,15 +64,8 @@ export default defineNuxtConfig({
       interval: parseInt(process.env.POLL_INTERVAL || '3000'), // 3秒
       timeout: parseInt(process.env.POLL_TIMEOUT || '300000') // 5分钟
     },
-    // 关键词配置
-    keywords: {
-      // 认证关键词（触发发送验证码）
-      auth: JSON.parse(process.env.KEYWORDS_AUTH || '["已关注", "认证", "验证", "login", "已订阅", "关注了", "验证码", "1"]'),
-      // 状态查询关键词
-      status: JSON.parse(process.env.KEYWORDS_STATUS || '["状态", "status", "查询"]'),
-      // 帮助关键词
-      help: JSON.parse(process.env.KEYWORDS_HELP || '["帮助", "help", "怎么", "如何"]')
-    }
+    // 关键词配置（JSON格式，支持自定义）
+    keywords: JSON.parse(process.env.KEYWORDS || JSON.stringify(['验证码']))
   },
 
   // Nitro 配置

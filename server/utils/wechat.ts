@@ -220,25 +220,7 @@ export function generateVerificationCode(): string {
  */
 export function containsAuthKeyword(content: string): boolean {
   const config = useRuntimeConfig();
-  const keywords = config.keywords.auth;
-  return keywords.some(k => content.includes(k));
-}
-
-/**
- * 检查是否是状态查询关键词
- */
-export function isStatusKeyword(content: string): boolean {
-  const config = useRuntimeConfig();
-  const keywords = config.keywords.status;
-  return keywords.some(k => content.includes(k));
-}
-
-/**
- * 检查是否是帮助关键词
- */
-export function isHelpKeyword(content: string): boolean {
-  const config = useRuntimeConfig();
-  const keywords = config.keywords.help;
+  const keywords = config.keywords;
   return keywords.some(k => content.includes(k));
 }
 
@@ -270,37 +252,3 @@ export function generateCodeMessage(code: string): string {
 提示：认证码5分钟内有效。`;
 }
 
-/**
- * 生成帮助消息
- */
-export function generateHelpMessage(): string {
-  const config = useRuntimeConfig();
-  const authKeywords = config.keywords.auth.join(', ');
-  const statusKeywords = config.keywords.status.join(', ');
-  const helpKeywords = config.keywords.help.join(', ');
-
-  return `认证流程帮助：
-
-1. 关注公众号
-2. 发送关键词【${config.keywords.auth[0]}】或【${config.keywords.auth[1]}】
-3. 获得6位认证码
-4. 在网站输入认证码完成登录
-
-支持关键词：
-- 认证: ${authKeywords}
-- 状态查询: ${statusKeywords}
-- 帮助: ${helpKeywords}
-
-如有问题，请联系管理员。`;
-}
-
-/**
- * 生成状态查询回复
- */
-export function generateStatusMessage(openid: string): string {
-  return `您的认证状态：已关注公众号
-
-如需重新认证，请发送"已关注"。
-
-如需帮助，请发送"帮助"。`;
-}

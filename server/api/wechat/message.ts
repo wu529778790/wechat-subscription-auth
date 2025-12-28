@@ -8,12 +8,8 @@ import {
   generateWeChatReply,
   generateVerificationCode,
   containsAuthKeyword,
-  isStatusKeyword,
-  isHelpKeyword,
   generateWelcomeMessage,
   generateCodeMessage,
-  generateHelpMessage,
-  generateStatusMessage,
   decryptWeChatMessage,
   encryptWeChatReply,
   generateEncryptedWeChatReply,
@@ -129,13 +125,7 @@ export default eventHandler(async (event) => {
 
         if (!content) {
           // 空内容处理
-          replyMsg = '请输入有效内容。发送"1"、"已关注"或"认证"获取验证码。';
-        } else if (isStatusKeyword(content)) {
-          // 状态查询
-          replyMsg = generateStatusMessage(FromUserName);
-        } else if (isHelpKeyword(content)) {
-          // 帮助信息
-          replyMsg = generateHelpMessage();
+          replyMsg = '请输入有效内容。发送"验证码"获取验证码。';
         } else if (containsAuthKeyword(content)) {
           // 认证关键词 - 重新发送验证码
           const existingCode = generateVerificationCode();
@@ -146,7 +136,7 @@ export default eventHandler(async (event) => {
           replyMsg = generateCodeMessage(existingCode);
         } else {
           // 默认回复
-          replyMsg = '欢迎！如果您需要重新获取验证码，请发送"已关注"或"认证"。';
+          replyMsg = '欢迎！如果您需要重新获取验证码，请发送"验证码"。';
         }
       }
 
