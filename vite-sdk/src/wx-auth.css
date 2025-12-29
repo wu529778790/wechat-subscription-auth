@@ -133,7 +133,9 @@
   color: #07C160;
   font-size: 13px;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.4;
+  white-space: nowrap; /* 防止文字换行 */
+  min-width: 60px; /* 确保有足够宽度 */
 }
 
 .wx-auth-icon {
