@@ -82,11 +82,6 @@
   text-align: center;
 }
 
-/* 步骤容器 - 现在二维码和输入框都同时显示 */
-.wx-auth-step {
-  display: block;
-}
-
 /* 描述文字 */
 .wx-auth-desc {
   font-size: 15px;
@@ -105,7 +100,6 @@
 
 /* 二维码容器 */
 .wx-auth-qrcode-container {
-  position: relative;
   width: 180px;
   height: 180px;
   margin: 0 auto 8px;
@@ -113,9 +107,6 @@
   border-radius: 8px;
   overflow: hidden;
   background: #f5f5f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .wx-auth-qrcode {
@@ -123,35 +114,6 @@
   height: 100%;
   display: none;
   object-fit: contain;
-  animation: fadeInImage 0.3s ease;
-}
-
-@keyframes fadeInImage {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.wx-auth-placeholder {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: #07C160;
-  font-size: 13px;
-  text-align: center;
-  line-height: 1.4;
-  white-space: nowrap;
-  min-width: 60px;
-  transition: opacity 0.2s ease;
-}
-
-.wx-auth-placeholder.fade-out {
-  opacity: 0;
-}
-
-.wx-auth-icon {
-  font-size: 32px;
-  margin-bottom: 6px;
 }
 
 /* 验证码输入 */

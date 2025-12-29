@@ -131,19 +131,15 @@ const UI = {
         </div>
         <div class="wx-auth-body">
           <!-- 二维码区域 -->
-          <div class="wx-auth-step wx-auth-step-qr">
+          <div>
             <div class="wx-auth-desc">微信扫码关注公众号</div>
             <div class="wx-auth-qrcode-container">
               <img class="wx-auth-qrcode" src="" alt="扫码关注" />
-              <div class="wx-auth-placeholder">
-                <div class="wx-auth-icon">📷</div>
-                <div>二维码</div>
-              </div>
             </div>
           </div>
 
           <!-- 验证码输入区域 -->
-          <div class="wx-auth-step wx-auth-step-code">
+          <div>
             <div class="wx-auth-hint">向公众号发送"验证码"获取</div>
             ${utils.generateCodeInputs()}
           </div>
@@ -240,41 +236,11 @@ const UI = {
   setQrCode(url: string): void {
     if (!url) return;
     const img = document.querySelector<HTMLImageElement>('.wx-auth-qrcode');
-    const placeholder = document.querySelector<HTMLElement>('.wx-auth-placeholder');
     if (!img) return;
 
-    // 显示加载中状态
-    if (placeholder) {
-      placeholder.innerHTML = '<div class="wx-auth-icon">⏳</div><div>加载中...</div>';
-    }
-
-    // 预加载图片
-    const tempImg = new Image();
-    tempImg.onload = () => {
-      // 图片加载完成后，先设置 src
-      img.src = url;
-
-      // 淡出占位符
-      if (placeholder) {
-        placeholder.classList.add('fade-out');
-        setTimeout(() => {
-          placeholder.style.display = 'none';
-          // 淡入图片
-          img.style.display = 'block';
-        }, 200);
-      } else {
-        img.style.display = 'block';
-      }
-    };
-
-    tempImg.onerror = () => {
-      // 加载失败，恢复默认占位符
-      if (placeholder) {
-        placeholder.innerHTML = '<div class="wx-auth-icon">📷</div><div>二维码</div>';
-      }
-    };
-
-    tempImg.src = url;
+    // 直接设置图片源并显示
+    img.src = url;
+    img.style.display = 'block';
   },
 
   // 显示消息
