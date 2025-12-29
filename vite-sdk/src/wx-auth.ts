@@ -397,7 +397,12 @@ export const WxAuth = {
       return;
     }
 
-    UI.showMessage('验证中...', 'info');
+    // 禁用验证按钮，防止重复点击
+    const btn = document.querySelector<HTMLButtonElement>('.wx-auth-btn-primary');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '验证中...';
+    }
 
     try {
       const result = await utils.request(
@@ -423,9 +428,19 @@ export const WxAuth = {
       } else {
         UI.showMessage('验证码错误或已过期', 'error');
         UI.clearCodeInputs();
+        // 恢复按钮
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '验证';
+        }
       }
     } catch (error) {
       UI.showMessage('验证失败，请重试', 'error');
+      // 恢复按钮
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '验证';
+      }
     }
   },
 

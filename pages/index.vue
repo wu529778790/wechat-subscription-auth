@@ -175,8 +175,10 @@ onMounted(async () => {
   setTimeout(() => {
     WxAuth.requireAuth().then((result) => {
       if (result) {
-        showMessage('✅ 已通过 Cookie 自动认证', 'success');
+        // Cookie 自动认证成功，不显示提示（静默通过）
+        updateButtonState();
       } else {
+        // 弹窗已打开
         showMessage('📱 SDK 弹窗已打开，请操作', 'info');
       }
     }).catch((error) => {
