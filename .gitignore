@@ -1,1 +1,42 @@
+# SDK 相关
 sdk/nul
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# Nuxt
+.nuxt/
+.nuxt-dist/
+.output/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+
+# 日志
+*.log
+
+# Lock files (可选，如果使用 pnpm 就保留 pnpm-lock.yaml)
+# package-lock.json
+# yarn.lock
