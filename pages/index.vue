@@ -21,16 +21,17 @@
         </div>
       </div>
 
-      <!-- 开始认证按钮 -->
+      <!-- 手动触发认证按钮（用于重新认证） -->
       <button
+        v-if="hasAuthCookie"
         @click="startAuth"
-        :disabled="authenticating"
-        class="w-full py-4 bg-[#07C160] hover:bg-[#06AD56] disabled:bg-[#C8C8C8] text-white rounded-xl font-bold text-base transition-all shadow-lg active:scale-[0.98] mb-3">
-        {{ authenticating ? '初始化中...' : '初始化 SDK' }}
+        class="w-full py-4 bg-[#07C160] hover:bg-[#06AD56] text-white rounded-xl font-bold text-base transition-all shadow-lg active:scale-[0.98] mb-3">
+        重新认证
       </button>
 
       <!-- 清空认证状态按钮 -->
       <button
+        v-if="hasAuthCookie"
         @click="clearAuth"
         class="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-all active:scale-[0.98] mb-3">
         清空认证状态
@@ -55,19 +56,19 @@
         <div class="bg-[#F8F8F8] rounded-xl p-4 space-y-3 border border-[#E5E5E5]">
           <div class="flex items-start gap-3">
             <span class="w-6 h-6 bg-[#07C160] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
-            <span class="text-gray-700 text-sm leading-relaxed">点击"初始化 SDK"</span>
+            <span class="text-gray-700 text-sm leading-relaxed">首次访问自动弹出认证窗口</span>
           </div>
           <div class="flex items-start gap-3">
             <span class="w-6 h-6 bg-[#07C160] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
-            <span class="text-gray-700 text-sm leading-relaxed">SDK 弹窗显示二维码和输入框</span>
-          </div>
-          <div class="flex items-start gap-3">
-            <span class="w-6 h-6 bg-[#07C160] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
             <span class="text-gray-700 text-sm leading-relaxed">微信扫码，输入6位验证码</span>
           </div>
           <div class="flex items-start gap-3">
+            <span class="w-6 h-6 bg-[#07C160] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+            <span class="text-gray-700 text-sm leading-relaxed">认证成功自动保存 Cookie</span>
+          </div>
+          <div class="flex items-start gap-3">
             <span class="w-6 h-6 bg-[#07C160] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">4</span>
-            <span class="text-gray-700 text-sm leading-relaxed">点击"验证"按钮完成认证</span>
+            <span class="text-gray-700 text-sm leading-relaxed">下次访问自动认证，无需操作</span>
           </div>
         </div>
       </div>
@@ -93,7 +94,15 @@ const WECHAT_QRCODE_URL = 'https://gcore.jsdelivr.net/gh/wu529778790/image/blog/
 // ============================================================
 
 const message = ref<{ type: string; text: string } | null>(null);
-const authenticating = ref(false);
+const hasAuthCookie = ref(false);
+
+// 检查本地 Cookie
+function checkLocalCookie(): boolean {
+  const cookie = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("wxauth-openid="));
+  return !!cookie;
+}
 
 // 显示消息
 function showMessage(text: string, type: 'success' | 'error' | 'info' = 'info'): void {
@@ -105,43 +114,24 @@ function showMessage(text: string, type: 'success' | 'error' | 'info' = 'info'):
   }, 3000);
 }
 
-// 开始认证
+// 更新按钮状态
+function updateButtonState(): void {
+  hasAuthCookie.value = checkLocalCookie();
+}
+
+// 手动触发认证（用于重新认证）
 async function startAuth(): Promise<void> {
-  authenticating.value = true;
-  message.value = null;
+  showMessage('📱 SDK 弹窗已打开，请操作', 'info');
 
   try {
-    // 初始化 SDK（使用页面顶部的配置）
-    WxAuth.init({
-      apiBase: API_BASE,
-      wechatName: WECHAT_NAME,
-      qrcodeUrl: WECHAT_QRCODE_URL,
-      onVerified: (user) => {
-        console.log('[Index] 验证成功', user);
-        showMessage('✅ 认证成功！', 'success');
-      },
-      onError: (error) => {
-        console.error('[Index] 错误', error);
-        showMessage(`❌ 错误: ${error.message || error}`, 'error');
-      }
-    });
-
-    // 调用认证 - SDK 会自动显示弹窗
     const result = await WxAuth.requireAuth();
-
     if (result) {
-      // 已通过 Cookie 自动认证
-      showMessage('✅ 已通过 Cookie 自动认证', 'success');
-    } else {
-      // 弹窗已打开，等待用户操作
-      showMessage('📱 SDK 弹窗已打开，请操作', 'info');
+      showMessage('✅ 认证成功！', 'success');
+      updateButtonState();
     }
-
   } catch (error) {
     console.error('[Index] 认证失败', error);
     showMessage('❌ 认证失败，请重试', 'error');
-  } finally {
-    authenticating.value = false;
   }
 }
 
@@ -153,8 +143,48 @@ function clearAuth(): void {
   // 关闭 SDK 弹窗（如果打开）
   WxAuth.close();
 
+  // 更新按钮状态
+  updateButtonState();
+
   showMessage('✅ 已清空认证状态', 'success');
 }
+
+// 页面加载时自动初始化 SDK
+onMounted(async () => {
+  // 初始化 SDK（使用页面顶部的配置）
+  WxAuth.init({
+    apiBase: API_BASE,
+    wechatName: WECHAT_NAME,
+    qrcodeUrl: WECHAT_QRCODE_URL,
+    onVerified: (user) => {
+      console.log('[Index] 验证成功', user);
+      showMessage('✅ 认证成功！', 'success');
+      updateButtonState();
+    },
+    onError: (error) => {
+      console.error('[Index] 错误', error);
+      showMessage(`❌ 错误: ${error.message || error}`, 'error');
+    }
+  });
+
+  // 更新按钮状态
+  updateButtonState();
+
+  // 调用认证 - SDK 会自动处理 Cookie 检查和弹窗显示
+  // 如果有 Cookie 且有效，自动认证；否则弹出窗口
+  setTimeout(() => {
+    WxAuth.requireAuth().then((result) => {
+      if (result) {
+        showMessage('✅ 已通过 Cookie 自动认证', 'success');
+      } else {
+        showMessage('📱 SDK 弹窗已打开，请操作', 'info');
+      }
+    }).catch((error) => {
+      console.error('[Index] 认证失败', error);
+      showMessage('❌ 认证失败，请重试', 'error');
+    });
+  }, 500);
+});
 </script>
 
 <style scoped>
