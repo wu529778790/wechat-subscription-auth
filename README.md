@@ -14,57 +14,7 @@
 - ✅ **用户体验** - 自动聚焦、粘贴支持、键盘导航
 - ✅ **灵活存储** - JSON 文件 / SQLite 双支持
 - ✅ **轻量 SDK** - 提供 < 12KB 的嵌入式 SDK
-
----
-
-## 🆕 新增：极简 SDK
-
-现在提供**极简版 SDK**，可在任何网站中嵌入微信订阅号验证：
-
-```javascript
-// 仅需 2 行代码！SDK 自动检测 Cookie 并静默认证
-WxAuth.init({ apiBase: 'https://your-api.com' });
-```
-
-**特点**：
-- 📦 总计 < 12KB（JS 7.4KB + CSS 3.5KB）
-- ⚡ 仅需配置 `apiBase` 参数
-- 🔧 无需后端任何改动
-- 🎨 微信原生风格弹窗
-- 📦 支持 NPM / CDN / 浏览器直接引入
-- ✅ **自动检测 Cookie，已认证用户静默通过**
-
-**使用方式**：
-
-1. **NPM 安装（推荐）**：
-```bash
-npm install @wu529778790/wechat-auth-sdk
-```
-
-```javascript
-import WxAuth from '@wu529778790/wechat-auth-sdk';
-import '@wu529778790/wechat-auth-sdk/dist/index.css';
-
-// 初始化后，SDK 会自动检测 Cookie
-WxAuth.init({
-  apiBase: 'https://your-api.com',
-  onVerified: (user) => console.log('认证成功', user)
-});
-```
-
-2. **CDN 引入**：
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wu529778790/wechat-auth-sdk@1.0.0/dist/index.css">
-<script src="https://cdn.jsdelivr.net/npm/@wu529778790/wechat-auth-sdk@1.0.0/dist/index.js"></script>
-<script>
-  // SDK 自动检测 Cookie
-  WxAuth.init({ apiBase: 'https://your-api.com' });
-</script>
-```
-
-**在线演示**：访问 `http://localhost:3000/sdk/demo`
-
-**独立 SDK 仓库**：[wu529778790/wechat-auth-sdk](https://github.com/wu529778790/wechat-auth-sdk)
+- ✅ **Docker 支持** - 一键部署，自动发布
 
 ---
 
@@ -158,7 +108,7 @@ pnpm dev
 ## 📁 项目结构
 
 ```
-wechat-subscription-auth/
+wx-auth/
 ├── server/                     # 后端服务
 │   ├── api/
 │   │   ├── wechat/
@@ -171,97 +121,22 @@ wechat-subscription-auth/
 │       ├── storage.ts          # 存储层
 │       └── session.ts          # Session 工具
 ├── pages/
-│   ├── index.vue               # 认证页面
-│   └── sdk/
-│       └── demo.vue            # SDK 演示页面（访问 /sdk/demo）
+│   └── index.vue               # 认证页面
 ├── data/
 │   └── auth-data.json          # 数据存储
+├── wx-auth-sdk/                # SDK 模块
+│   ├── src/
+│   │   ├── index.ts            # SDK 入口
+│   │   ├── wx-auth.ts          # 主 SDK
+│   │   ├── protection.ts       # 弹窗保护模块
+│   │   └── wx-auth.css         # 样式
+│   └── vite.config.ts          # 构建配置
+├── Dockerfile                  # Docker 镜像
+├── docker-compose.yml          # 部署配置
+├── deploy.sh                   # 快速部署脚本
 ├── nuxt.config.ts
-├── package.json
-└── .env                        # 环境变量
-
-# SDK 模块（独立）
-wx-auth-sdk/
-├── src/
-│   ├── index.ts                # SDK 入口
-│   ├── wx-auth.ts              # 主 SDK（认证逻辑）
-│   ├── protection.ts           # ✨ 弹窗保护模块（独立）
-│   ├── wx-auth.css             # 样式
-│   └── protection.md           # 保护模块文档
-├── vite.config.ts              # 构建配置
 └── package.json
 ```
-
-**SDK 独立仓库**：`@wu529778790/wechat-auth-sdk` - [GitHub](https://github.com/wu529778790/wechat-auth-sdk) | [NPM](https://www.npmjs.com/package/@wu529778790/wechat-auth-sdk)
-
----
-
-## 🛡️ SDK 架构（2025-12-29 更新）
-
-### 核心模块
-
-```
-wx-auth-sdk/
-├── src/
-│   ├── index.ts              # SDK 入口
-│   ├── wx-auth.ts            # 主 SDK（认证逻辑）
-│   ├── protection.ts         # ✨ 弹窗保护模块（独立）
-│   ├── wx-auth.css           # 样式
-│   └── protection.md         # 保护模块文档
-```
-
-### Protection 模块（防删除保护）
-
-**新增独立模块**，防止用户从控制台删除认证弹窗：
-
-```typescript
-// protection.ts - 可独立使用
-export const Protection = {
-  enable(config: ProtectionConfig)    // 启用保护
-  disable()                           // 禁用保护
-  healthCheck(config)                 // 定时检查
-  restore(config)                     // 恢复弹窗
-};
-```
-
-**保护机制**：
-- ✅ **MutationObserver** - 实时检测 DOM 删除/隐藏
-- ✅ **定时器兜底** - 每秒检查一次（≤ 1000ms）
-- ✅ **智能恢复** - 防止循环，保留配置
-- ✅ **零依赖** - 原生 JavaScript
-
-**支持的攻击防御**：
-```javascript
-// 以下操作都会被自动恢复
-document.getElementById('wx-auth-modal').remove();
-modal.style.display = 'none';
-document.body.innerHTML = '';
-```
-
-**使用方式**（自动集成）：
-```typescript
-// wx-auth.ts 中已集成
-UI.show() {
-  Protection.enable({
-    modalId: "wx-auth-modal",
-    getState: () => state,
-    onRestore: () => { /* 恢复逻辑 */ }
-  });
-}
-```
-
-**独立使用**（可选）：
-```typescript
-import { Protection } from './protection';
-
-Protection.enable({
-  modalId: "my-modal",
-  getState: () => ({ isOpen: true }),
-  onRestore: () => { /* 自定义恢复 */ }
-});
-```
-
-**详细文档**：`wx-auth-sdk/src/protection.md`
 
 ---
 
@@ -302,6 +177,17 @@ DELETE /api/auth/session  # 清除 Session
   - 默认：JSON 文件（无需配置）
   - 可选：SQLite（设置 `STORAGE_TYPE=sqlite`）
 
+### 5. SDK 弹窗保护
+```typescript
+// 防止用户删除认证弹窗
+wx-auth-sdk/src/protection.ts
+
+保护机制：
+- MutationObserver - 实时检测 DOM 删除
+- 定时器兜底 - 每秒检查一次
+- 智能恢复 - 防止循环
+```
+
 ---
 
 ## 🎨 界面预览
@@ -334,59 +220,52 @@ DELETE /api/auth/session  # 清除 Session
 
 ---
 
-## 🚀 部署指南
+## 🐳 Docker 部署
 
-### Vercel（推荐）
+### 快速启动
 
 ```bash
-# 1. 构建项目
+# 1. 配置环境变量
+cp .env.example .env
+nano .env
+
+# 2. 启动服务
+docker-compose up -d --build
+
+# 3. 查看日志
+docker-compose logs -f
+```
+
+### GitHub Actions 自动发布
+
+```bash
+# 创建标签并推送
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+GitHub Actions 自动构建并发布到：
+- GitHub Container Registry: `ghcr.io/your-username/wx-auth`
+- Docker Hub: `yourusername/wx-auth-system`
+
+**详细文档**：[DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
+## 🚀 其他部署方式
+
+### Vercel
+
+```bash
 pnpm build
-
-# 2. 部署到 Vercel
 vercel --prod
-
-# 或使用 Vercel CLI
-vercel
-```
-
-**Vercel 环境变量配置**：
-在 Vercel 项目设置中添加 `.env` 中的变量。
-
-### Docker
-
-```dockerfile
-# Dockerfile
-FROM node:20-alpine
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
-COPY . .
-RUN pnpm build
-EXPOSE 3000
-CMD ["pnpm", "preview"]
-```
-
-构建和运行：
-```bash
-docker build -t wechat-auth .
-docker run -d -p 3000:3000 \
-  -e SITE_URL=https://your-site.com \
-  -e WECHAT_TOKEN=your-token \
-  -e WECHAT_NAME=我的公众号 \
-  -e SESSION_SECRET=your-secret \
-  wechat-auth
 ```
 
 ### 传统服务器
 
 ```bash
-# 安装依赖
 pnpm install
-
-# 构建
 pnpm build
-
-# 启动服务
 pnpm preview
 
 # 或使用 PM2
@@ -494,19 +373,9 @@ STORAGE_TYPE=sqlite pnpm dev
 - 默认：JSON 文件（无需配置）
 - SQLite：`STORAGE_TYPE=sqlite pnpm dev`
 
-### Q: 支持多个公众号吗？
-**A**: 支持！在环境变量中配置：
-```env
-WECHAT_ACCOUNTS=[{"name":"公众号A","token":"token1"},{"name":"公众号B","token":"token2"}]
-```
-
-### Q: 如何自定义界面？
-**A**: 修改 `pages/index.vue` 和 `assets/css/main.css`
-
 ### Q: 如何在其他网站中使用？
 **A**: 使用极简 SDK（推荐 NPM 方式）：
 
-**方式 1: NPM 安装（推荐）**
 ```bash
 npm install @wu529778790/wechat-auth-sdk
 ```
@@ -519,44 +388,7 @@ WxAuth.init({ apiBase: 'https://your-api.com' });
 await WxAuth.requireAuth();
 ```
 
-**方式 2: CDN 引入**
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wu529778790/wechat-auth-sdk@1.0.0/dist/index.css">
-<script src="https://cdn.jsdelivr.net/npm/@wu529778790/wechat-auth-sdk@1.0.0/dist/index.js"></script>
-
-<script>
-  WxAuth.init({ apiBase: 'https://your-api.com' });
-  await WxAuth.requireAuth();
-</script>
-```
-
-**在线演示**：访问 `http://localhost:3000/sdk/demo`
 **详细文档**：[wu529778790/wechat-auth-sdk](https://github.com/wu529778790/wechat-auth-sdk)
-
----
-
-## 📊 项目统计
-
-**后端服务**：
-- **核心文件**: 18个
-- **代码行数**: ~1500行
-- **依赖包**: 3个生产依赖
-- **技术栈**: Nuxt 4 + Vue 3 + TypeScript + Tailwind CSS
-- **存储**: JSON 文件 / SQLite
-- **加密**: AES-256-GCM / AES-256-CBC / SHA1
-
-**极简 SDK**（独立包 `@wu529778790/wechat-auth-sdk`）：
-- **文件大小**: < 12KB (JS 7.4KB + CSS 3.5KB)
-- **依赖**: 零依赖（原生 JS）
-- **兼容性**: Chrome 60+, Firefox 55+, Safari 11+, Edge 79+
-- **发布**: NPM / CDN / 浏览器直接引入
-- **仓库**: [wu529778790/wechat-auth-sdk](https://github.com/wu529778790/wechat-auth-sdk)
-
-**SDK 模块架构**：
-- `wx-auth.ts` (534行) - 主 SDK，认证逻辑
-- `protection.ts` (160行) - 弹窗保护模块（独立）
-- `wx-auth.css` (149行) - 样式
-- **总计**: 843行代码，模块化设计
 
 ---
 
@@ -569,16 +401,6 @@ await WxAuth.requireAuth();
 ## 📄 许可证
 
 MIT License - 自由使用和修改
-
----
-
-## 📞 技术支持
-
-如有问题，请检查：
-1. ✅ 认证服务是否正常运行
-2. ✅ 微信后台配置是否正确
-3. ✅ HTTPS 证书是否有效
-4. ✅ 浏览器控制台是否有错误
 
 ---
 
@@ -600,6 +422,5 @@ pnpm dev
 
 ---
 
-**最后更新**: 2025-12-29
 **版本**: v4.2.2
 **状态**: ✅ 生产就绪
