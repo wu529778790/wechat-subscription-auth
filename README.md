@@ -22,9 +22,8 @@
 现在提供**极简版 SDK**，可在任何网站中嵌入微信订阅号验证：
 
 ```javascript
-// 仅需 3 行代码
+// 仅需 2 行代码！SDK 自动检测 Cookie 并静默认证
 WxAuth.init({ apiBase: 'https://your-api.com' });
-await WxAuth.requireAuth();
 ```
 
 **特点**：
@@ -33,6 +32,7 @@ await WxAuth.requireAuth();
 - 🔧 无需后端任何改动
 - 🎨 微信原生风格弹窗
 - 📦 支持 NPM / CDN / 浏览器直接引入
+- ✅ **自动检测 Cookie，已认证用户静默通过**
 
 **使用方式**：
 
@@ -45,14 +45,21 @@ npm install @wu529778790/wechat-auth-sdk
 import WxAuth from '@wu529778790/wechat-auth-sdk';
 import '@wu529778790/wechat-auth-sdk/dist/index.css';
 
-WxAuth.init({ apiBase: 'https://your-api.com' });
-await WxAuth.requireAuth();
+// 初始化后，SDK 会自动检测 Cookie
+WxAuth.init({
+  apiBase: 'https://your-api.com',
+  onVerified: (user) => console.log('认证成功', user)
+});
 ```
 
 2. **CDN 引入**：
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@wu529778790/wechat-auth-sdk@1.0.0/dist/index.css">
 <script src="https://cdn.jsdelivr.net/npm/@wu529778790/wechat-auth-sdk@1.0.0/dist/index.js"></script>
+<script>
+  // SDK 自动检测 Cookie
+  WxAuth.init({ apiBase: 'https://your-api.com' });
+</script>
 ```
 
 **在线演示**：访问 `http://localhost:3000/sdk/demo`

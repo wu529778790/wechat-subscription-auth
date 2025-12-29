@@ -151,6 +151,7 @@ function clearAuth(): void {
 // 页面加载时自动初始化 SDK
 onMounted(async () => {
   // 初始化 SDK（使用页面顶部的配置）
+  // SDK 会自动检测 Cookie 并静默认证，未认证时显示弹窗
   WxAuth.init({
     apiBase: API_BASE,
     wechatName: WECHAT_NAME,
@@ -158,6 +159,7 @@ onMounted(async () => {
     onVerified: (user) => {
       console.log('[Index] 验证成功', user);
       updateButtonState();
+      showMessage('✅ 认证成功！', 'success');
     },
     onError: (error) => {
       console.error('[Index] 错误', error);
@@ -167,23 +169,6 @@ onMounted(async () => {
 
   // 更新按钮状态
   updateButtonState();
-
-  // 调用认证 - SDK 会自动处理 Cookie 检查和弹窗显示
-  // 如果有 Cookie 且有效，自动认证；否则弹出窗口
-  setTimeout(() => {
-    WxAuth.requireAuth().then((result) => {
-      if (result) {
-        // Cookie 自动认证成功，不显示提示（静默通过）
-        updateButtonState();
-      } else {
-        // 弹窗已打开
-        showMessage('📱 SDK 弹窗已打开，请操作', 'info');
-      }
-    }).catch((error) => {
-      console.error('[Index] 认证失败', error);
-      showMessage('❌ 认证失败，请重试', 'error');
-    });
-  }, 500);
 });
 </script>
 

@@ -33,7 +33,7 @@ pnpm build
 import { WxAuth, type WxAuthConfig } from '@wechat-subscription-auth/wx-auth-sdk';
 import '@wechat-subscription-auth/wx-auth-sdk/dist/style.css';
 
-// 初始化
+// 初始化（SDK 会自动检测 Cookie 并静默认证）
 WxAuth.init({
   apiBase: 'https://your-api.com',
   onVerified: (user) => {
@@ -41,8 +41,8 @@ WxAuth.init({
   }
 });
 
-// 使用
-await WxAuth.requireAuth();
+// 如果需要手动触发认证（例如重新认证按钮）
+// await WxAuth.requireAuth();
 ```
 
 ### 2. 作为浏览器脚本使用 (UMD)
@@ -56,14 +56,13 @@ await WxAuth.requireAuth();
 <body>
   <script src="./dist/wx-auth.umd.js"></script>
   <script>
+    // 初始化（SDK 会自动检测 Cookie 并静默认证）
     WxAuth.init({
       apiBase: 'https://your-api.com',
       onVerified: (user) => {
         console.log('验证通过', user);
       }
     });
-
-    WxAuth.requireAuth();
   </script>
 </body>
 </html>
@@ -73,7 +72,7 @@ await WxAuth.requireAuth();
 
 ### `WxAuth.init(options)`
 
-初始化 SDK。
+初始化 SDK。**初始化后会自动检测 Cookie 并静默认证**，如果未认证则显示弹窗。
 
 **参数：**
 - `options.apiBase` (必填): 后端 API 地址
@@ -82,9 +81,14 @@ await WxAuth.requireAuth();
 - `options.wechatName` (可选): 公众号名称，默认为 "公众号"
 - `options.qrcodeUrl` (可选): 二维码 URL
 
+**行为：**
+- 自动检测 `wxauth-openid` Cookie
+- 已认证 → 触发 `onVerified` 回调（静默通过）
+- 未认证 → 显示认证弹窗
+
 ### `WxAuth.requireAuth()`
 
-主入口函数，需要验证时调用。
+手动触发认证流程（用于重新认证、切换账号等场景）。
 
 **返回：** `Promise<boolean>` - 验证成功返回 `true`
 

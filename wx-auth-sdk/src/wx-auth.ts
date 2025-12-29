@@ -297,6 +297,38 @@ export const WxAuth = {
     }
 
     console.log("[WxAuth] SDK initialized", config);
+
+    // 自动检测 Cookie 并静默认证
+    if (typeof window !== 'undefined') {
+      this.autoCheck();
+    }
+  },
+
+  // 自动检测 Cookie 并验证（内部使用）
+  async autoCheck(): Promise<boolean> {
+    const openid = utils.getCookie("wxauth-openid");
+    if (!openid) {
+      return false;
+    }
+
+    try {
+      const result = await utils.request(
+        `${config.apiBase}/api/auth/check?openid=${openid}`
+      );
+
+      if (result.authenticated) {
+        console.log("[WxAuth] 自动认证成功（Cookie）");
+        this.onVerified(result.user);
+        return true;
+      } else {
+        // Cookie 无效，删除它
+        utils.deleteCookie("wxauth-openid");
+        return false;
+      }
+    } catch (error) {
+      console.error("[WxAuth] 自动验证失败:", error);
+      return false;
+    }
   },
 
   // 主入口：需要验证时调用
