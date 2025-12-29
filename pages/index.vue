@@ -159,7 +159,7 @@ onMounted(async () => {
     onVerified: (user) => {
       console.log('[Index] 验证成功', user);
       updateButtonState();
-      showMessage('✅ 认证成功！', 'success');
+      // 静默处理，不显示提示
     },
     onError: (error) => {
       console.error('[Index] 错误', error);

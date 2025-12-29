@@ -434,20 +434,14 @@ export const WxAuth = {
       );
 
       if (result.authenticated) {
-        // 验证成功 - 显示成功消息，然后关闭弹窗
-        // 保存到Cookie
+        // 验证成功 - 保存到Cookie
         if (result.user && result.user.openid) {
           utils.setCookie("wxauth-openid", result.user.openid);
         }
 
-        // 显示成功消息
-        UI.showMessage("验证成功！", "success");
-
-        // 延迟关闭弹窗（给用户看到成功提示）
-        setTimeout(() => {
-          this.close();
-          this.onVerified(result.user);
-        }, 800);
+        // 立即关闭弹窗（静默处理）
+        this.close();
+        this.onVerified(result.user);
       } else {
         UI.showMessage("验证码错误或已过期", "error");
         UI.clearCodeInputs();
