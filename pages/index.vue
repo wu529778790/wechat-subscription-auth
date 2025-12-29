@@ -21,35 +21,13 @@
         </div>
       </div>
 
-      <!-- 手动触发认证按钮（用于重新认证） -->
-      <button
-        v-if="hasAuthCookie"
-        @click="startAuth"
-        class="w-full py-4 bg-[#07C160] hover:bg-[#06AD56] text-white rounded-xl font-bold text-base transition-all shadow-lg active:scale-[0.98] mb-3">
-        重新认证
-      </button>
-
-      <!-- 清空认证状态按钮 -->
+      <!-- 清空认证状态按钮（会自动触发重新认证） -->
       <button
         v-if="hasAuthCookie"
         @click="clearAuth"
-        class="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-all active:scale-[0.98] mb-3">
+        class="w-full py-4 bg-[#07C160] hover:bg-[#06AD56] text-white rounded-xl font-bold text-base transition-all shadow-lg active:scale-[0.98]">
         清空认证状态
       </button>
-
-      <!-- 消息提示 -->
-      <div
-        v-if="message"
-        :class="[
-          'mt-4 px-4 py-3 rounded-xl text-sm text-center font-medium',
-          message.type === 'success'
-            ? 'bg-[#F0FDF4] text-[#07C160] border border-[#07C160]/20'
-            : message.type === 'error'
-            ? 'bg-[#FEF2F2] text-[#DC2626] border border-[#DC2626]/20'
-            : 'bg-[#E8F4FF] text-[#0066CC] border border-[#B3D9FF]',
-        ]">
-        {{ message.text }}
-      </div>
 
       <!-- 说明步骤 -->
       <div class="mt-6 text-left">
@@ -93,7 +71,6 @@ const WECHAT_NAME = '神族九帝';
 const WECHAT_QRCODE_URL = 'https://gcore.jsdelivr.net/gh/wu529778790/image/blog/qrcode_for_gh_61da24be23ff_258.jpg';
 // ============================================================
 
-const message = ref<{ type: string; text: string } | null>(null);
 const hasAuthCookie = ref(false);
 
 // 检查本地 Cookie
@@ -104,34 +81,9 @@ function checkLocalCookie(): boolean {
   return !!cookie;
 }
 
-// 显示消息
-function showMessage(text: string, type: 'success' | 'error' | 'info' = 'info'): void {
-  message.value = { type, text };
-  setTimeout(() => {
-    if (message.value?.text === text) {
-      message.value = null;
-    }
-  }, 3000);
-}
-
 // 更新按钮状态
 function updateButtonState(): void {
   hasAuthCookie.value = checkLocalCookie();
-}
-
-// 手动触发认证（用于重新认证）
-async function startAuth(): Promise<void> {
-  showMessage('📱 SDK 弹窗已打开，请操作', 'info');
-
-  try {
-    const result = await WxAuth.requireAuth();
-    if (result) {
-      updateButtonState();
-    }
-  } catch (error) {
-    console.error('[Index] 认证失败', error);
-    showMessage('❌ 认证失败，请重试', 'error');
-  }
 }
 
 // 清空认证状态
@@ -139,13 +91,8 @@ function clearAuth(): void {
   // 清除 Cookie
   document.cookie = "wxauth-openid=; Max-Age=0; path=/";
 
-  // 关闭 SDK 弹窗（如果打开）
-  WxAuth.close();
-
-  // 更新按钮状态
-  updateButtonState();
-
-  showMessage('✅ 已清空认证状态', 'success');
+  // 刷新页面，自动触发认证弹窗
+  window.location.reload();
 }
 
 // 页面加载时自动初始化 SDK
@@ -159,11 +106,10 @@ onMounted(async () => {
     onVerified: (user) => {
       console.log('[Index] 验证成功', user);
       updateButtonState();
-      // 静默处理，不显示提示
     },
     onError: (error) => {
       console.error('[Index] 错误', error);
-      showMessage(`❌ 错误: ${error.message || error}`, 'error');
+      // SDK 内部会处理错误显示
     }
   });
 

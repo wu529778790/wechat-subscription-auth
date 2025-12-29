@@ -439,9 +439,17 @@ export const WxAuth = {
           utils.setCookie("wxauth-openid", result.user.openid);
         }
 
-        // 立即关闭弹窗（静默处理）
-        this.close();
-        this.onVerified(result.user);
+        // 按钮显示成功状态
+        if (btn) {
+          btn.textContent = "✅ 成功";
+          btn.style.background = "#07C160";
+        }
+
+        // 延迟关闭弹窗，让用户看到成功状态
+        setTimeout(() => {
+          this.close();
+          this.onVerified(result.user);
+        }, 500);
       } else {
         UI.showMessage("验证码错误或已过期", "error");
         UI.clearCodeInputs();
