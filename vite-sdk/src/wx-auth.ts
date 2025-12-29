@@ -155,12 +155,6 @@ const UI = {
           <div class="wx-auth-actions">
             <button class="wx-auth-btn wx-auth-btn-primary" onclick="WxAuth.verifyCode()">验证</button>
           </div>
-
-          <!-- 成功状态 -->
-          <div class="wx-auth-step wx-auth-step-success" style="display:none">
-            <div class="wx-auth-success-icon">✅</div>
-            <div class="wx-auth-success-text">验证成功</div>
-          </div>
         </div>
       </div>
     `;
@@ -239,26 +233,6 @@ const UI = {
     if (modal) {
       modal.style.display = 'none';
       state.isOpen = false;
-    }
-  },
-
-  // 显示步骤（现在只控制成功状态）
-  showStep(step: string): void {
-    state.currentStep = step;
-
-    // 成功状态显示成功提示，隐藏按钮
-    if (step === 'success') {
-      const successEl = document.querySelector<HTMLElement>('.wx-auth-step-success');
-      const actions = document.querySelector<HTMLElement>('.wx-auth-actions');
-      if (successEl) successEl.style.display = 'block';
-      if (actions) actions.style.display = 'none';
-    } else {
-      // 其他状态隐藏成功提示，显示按钮
-      const successEl = document.querySelector<HTMLElement>('.wx-auth-step-success');
-      if (successEl) successEl.style.display = 'none';
-
-      const actions = document.querySelector<HTMLElement>('.wx-auth-actions');
-      if (actions) actions.style.display = 'flex';
     }
   },
 
@@ -402,20 +376,20 @@ export const WxAuth = {
       );
 
       if (result.authenticated) {
-        // 验证成功
-        UI.showStep('success');
-        UI.showMessage('验证成功！', 'success');
-
+        // 验证成功 - 显示成功消息，然后关闭弹窗
         // 保存到Cookie
         if (result.user && result.user.openid) {
           utils.setCookie('wxauth-openid', result.user.openid);
         }
 
-        // 延迟关闭
+        // 显示成功消息
+        UI.showMessage('验证成功！', 'success');
+
+        // 延迟关闭弹窗（给用户看到成功提示）
         setTimeout(() => {
           this.close();
           this.onVerified(result.user);
-        }, 1500);
+        }, 800);
 
       } else {
         UI.showMessage('验证码错误或已过期', 'error');
