@@ -1,15 +1,41 @@
 {
-  "name": "vite-sdk",
-  "private": true,
-  "version": "0.0.0",
+  "name": "wx-auth-sdk",
+  "version": "1.0.0",
+  "description": "微信订阅号认证 SDK - 极简版",
   "type": "module",
+  "main": "./dist/wx-auth.umd.js",
+  "module": "./dist/wx-auth.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/wx-auth.js",
+      "require": "./dist/wx-auth.umd.js"
+    },
+    "./dist/style.css": "./dist/wx-auth.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "wechat",
+    "wx",
+    "auth",
+    "subscription",
+    "sdk",
+    "微信认证"
+  ],
+  "author": "",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
+    "build": "vite build",
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "typescript": "~5.9.3",
-    "vite": "^7.2.4"
+    "vite": "^7.2.4",
+    "vite-plugin-dts": "^4.5.4"
   }
 }

@@ -31,10 +31,12 @@ export default defineNuxtConfig({
     // 公开配置（客户端可用）
     public: {
       siteUrl: process.env.SITE_URL || 'http://localhost:3000',
+      // SDK API Base URL（用于前端 SDK）
+      apiBase: process.env.API_BASE || 'https://auth.shenzjd.com',
       // 公众号名称（用于前端显示）
-      wechatName: process.env.WECHAT_NAME || '我的公众号',
+      wechatName: process.env.WECHAT_NAME || '神族九帝',
       // 公众号二维码URL（用于前端显示）
-      wechatQrcodeUrl: process.env.WECHAT_QRCODE_URL || '',
+      wechatQrcodeUrl: process.env.WECHAT_QRCODE_URL || 'https://gcore.jsdelivr.net/gh/wu529778790/image/blog/qrcode_for_gh_61da24be23ff_258.jpg',
       // 多公众号配置（支持多个订阅号）
       wechatAccounts: JSON.parse(process.env.WECHAT_ACCOUNTS || '[]')
     },
