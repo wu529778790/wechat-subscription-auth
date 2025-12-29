@@ -126,7 +126,6 @@ async function startAuth(): Promise<void> {
   try {
     const result = await WxAuth.requireAuth();
     if (result) {
-      showMessage('✅ 认证成功！', 'success');
       updateButtonState();
     }
   } catch (error) {
@@ -158,7 +157,6 @@ onMounted(async () => {
     qrcodeUrl: WECHAT_QRCODE_URL,
     onVerified: (user) => {
       console.log('[Index] 验证成功', user);
-      showMessage('✅ 认证成功！', 'success');
       updateButtonState();
     },
     onError: (error) => {
