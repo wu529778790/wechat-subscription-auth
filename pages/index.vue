@@ -1,23 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#eee] flex items-center justify-center p-4">
-    <!-- 已认证状态 -->
-    <div
-      v-if="authenticated"
-      class="w-full max-w-md bg-white rounded-2xl p-8 text-center animate-fade-in shadow-xl">
-      <div class="text-5xl mb-3">✅</div>
-      <h2 class="text-xl font-bold text-gray-800 mb-1">认证成功</h2>
-      <p class="text-gray-500 mb-6 text-sm">欢迎 {{ userInfo?.nickname || '用户' }}</p>
-      <button
-        @click="logout"
-        class="w-full py-3 bg-[#07C160] hover:bg-[#06AD56] text-white rounded-xl font-medium transition shadow-lg">
-        退出登录
-      </button>
-    </div>
-
-    <!-- 未认证状态 - 使用 SDK -->
-    <div
-      v-else
-      class="w-full max-w-md bg-white rounded-2xl p-8 text-center animate-fade-in shadow-xl">
+    <div class="w-full max-w-md bg-white rounded-2xl p-8 text-center animate-fade-in shadow-xl">
       <div class="text-5xl mb-3">🔐</div>
       <h2 class="text-xl font-bold text-gray-800 mb-1">微信订阅号认证</h2>
       <p class="text-gray-500 mb-6 text-sm">SDK 演示页面</p>
@@ -46,6 +29,13 @@
         {{ authenticating ? '初始化中...' : '初始化 SDK' }}
       </button>
 
+      <!-- 清空认证状态按钮 -->
+      <button
+        @click="clearAuth"
+        class="w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-xl font-medium transition-all active:scale-[0.98] mb-3">
+        清空认证状态
+      </button>
+
       <!-- 消息提示 -->
       <div
         v-if="message"
@@ -65,7 +55,7 @@
         <div class="bg-[#F8F8F8] rounded-xl p-4 space-y-3 border border-[#E5E5E5]">
           <div class="flex items-start gap-3">
             <span class="w-6 h-6 bg-[#07C160] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
-            <span class="text-gray-700 text-sm leading-relaxed">点击"开始微信认证"</span>
+            <span class="text-gray-700 text-sm leading-relaxed">点击"初始化 SDK"</span>
           </div>
           <div class="flex items-start gap-3">
             <span class="w-6 h-6 bg-[#07C160] text-white rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
@@ -104,8 +94,6 @@ const WECHAT_QRCODE_URL = 'https://gcore.jsdelivr.net/gh/wu529778790/image/blog/
 
 const message = ref<{ type: string; text: string } | null>(null);
 const authenticating = ref(false);
-const authenticated = ref(false);
-const userInfo = ref<any>(null);
 
 // 显示消息
 function showMessage(text: string, type: 'success' | 'error' | 'info' = 'info'): void {
@@ -115,14 +103,6 @@ function showMessage(text: string, type: 'success' | 'error' | 'info' = 'info'):
       message.value = null;
     }
   }, 3000);
-}
-
-// 检查本地 Cookie
-function checkLocalCookie(): boolean {
-  const cookie = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith("wxauth-openid="));
-  return !!cookie;
 }
 
 // 开始认证
@@ -138,8 +118,6 @@ async function startAuth(): Promise<void> {
       qrcodeUrl: WECHAT_QRCODE_URL,
       onVerified: (user) => {
         console.log('[Index] 验证成功', user);
-        authenticated.value = true;
-        userInfo.value = user;
         showMessage('✅ 认证成功！', 'success');
       },
       onError: (error) => {
@@ -167,34 +145,16 @@ async function startAuth(): Promise<void> {
   }
 }
 
-// 退出登录
-async function logout(): Promise<void> {
-  if (confirm('确定退出吗？')) {
-    // 清除 Cookie
-    document.cookie = "wxauth-openid=; Max-Age=0; path=/";
+// 清空认证状态
+function clearAuth(): void {
+  // 清除 Cookie
+  document.cookie = "wxauth-openid=; Max-Age=0; path=/";
 
-    // 关闭 SDK 弹窗（如果打开）
-    WxAuth.close();
+  // 关闭 SDK 弹窗（如果打开）
+  WxAuth.close();
 
-    // 重置状态
-    authenticated.value = false;
-    userInfo.value = null;
-    showMessage('已退出登录', 'info');
-
-    // 延迟刷新
-    setTimeout(() => {
-      location.reload();
-    }, 500);
-  }
+  showMessage('✅ 已清空认证状态', 'success');
 }
-
-// 页面加载时检查认证状态
-onMounted(async () => {
-  // 检查本地 Cookie
-  if (checkLocalCookie()) {
-    showMessage('ℹ️ 检测到本地认证信息，可以继续使用', 'info');
-  }
-});
 </script>
 
 <style scoped>
