@@ -90,12 +90,13 @@
   font-weight: 500;
 }
 
-/* 提示文字 */
+/* 提示文字 - 与描述文字样式一致，作为步骤2 */
 .wx-auth-hint {
-  font-size: 13px;
-  color: #999;
+  font-size: 15px;
+  color: #333;
   margin-top: 12px;
-  line-height: 1.5;
+  margin-bottom: 16px;
+  font-weight: 500;
 }
 
 /* 二维码容器 */
@@ -289,6 +290,6 @@
   }
 
   .wx-auth-hint {
-    color: #999;
+    color: #e5e5e5;
   }
 }
