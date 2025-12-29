@@ -313,17 +313,8 @@ export const WxAuth = {
     // 2. 显示弹窗
     UI.show();
 
-    // 3. 获取配置（公众号名称、二维码）
+    // 3. 显示配置的二维码和描述
     try {
-      // 尝试获取配置（如果后端有 /api/sdk/config）
-      try {
-        const cfg = await utils.request(`${config.apiBase}/api/sdk/config`);
-        if (cfg.wechatName) config.wechatName = cfg.wechatName;
-        if (cfg.qrcodeUrl) config.qrcodeUrl = cfg.qrcodeUrl;
-      } catch (e) {
-        // 使用默认配置
-      }
-
       // 显示二维码
       if (config.qrcodeUrl) {
         UI.setQrCode(config.qrcodeUrl);
@@ -334,8 +325,6 @@ export const WxAuth = {
       if (desc) {
         desc.textContent = `微信扫码关注 "${config.wechatName}"`;
       }
-
-      // 不显示消息提示，让用户直接操作
 
       // 自动聚焦到第一个输入框
       setTimeout(() => {
