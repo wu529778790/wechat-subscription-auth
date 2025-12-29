@@ -43,7 +43,7 @@
         @click="startAuth"
         :disabled="authenticating"
         class="w-full py-4 bg-[#07C160] hover:bg-[#06AD56] disabled:bg-[#C8C8C8] text-white rounded-xl font-bold text-base transition-all shadow-lg active:scale-[0.98] mb-3">
-        {{ authenticating ? '认证中...' : '开始微信认证' }}
+        {{ authenticating ? '初始化中...' : '初始化 SDK' }}
       </button>
 
       <!-- 消息提示 -->
