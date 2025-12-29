@@ -95,11 +95,11 @@ import '../vite-sdk/src/wx-auth.css';
 const API_BASE = 'http://localhost:3000';
 
 // 公众号名称（可选，用于显示）
-const WECHAT_NAME = '我的公众号';
+const WECHAT_NAME = '神族九帝';
 
 // 公众号二维码 URL（可选，留空显示默认占位图）
 // 示例: 'https://your-site.com/qrcode.jpg'
-const WECHAT_QRCODE_URL = '';
+const WECHAT_QRCODE_URL = 'https://gcore.jsdelivr.net/gh/wu529778790/image/blog/qrcode_for_gh_61da24be23ff_258.jpg';
 // ============================================================
 
 const message = ref<{ type: string; text: string } | null>(null);
