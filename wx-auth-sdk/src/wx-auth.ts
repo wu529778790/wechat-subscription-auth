@@ -24,7 +24,7 @@
  *    await WxAuth.requireAuth();
  */
 
-import { Protection } from './protection';
+import { Protection } from "./protection";
 
 // 配置类型
 interface WxAuthConfig {
@@ -143,7 +143,7 @@ const UI = {
 
           <!-- 验证码输入区域 -->
           <div>
-            <div class="wx-auth-hint">2. 公众号发送"验证码"获取</div>
+            <div class="wx-auth-hint">2. 向公众号发送"验证码"获取</div>
             ${utils.generateCodeInputs()}
           </div>
 
@@ -245,7 +245,8 @@ const UI = {
         }
         this.bindInputEvents();
         setTimeout(() => {
-          const firstInput = document.querySelector<HTMLInputElement>(".wx-auth-input");
+          const firstInput =
+            document.querySelector<HTMLInputElement>(".wx-auth-input");
           if (firstInput) firstInput.focus();
         }, 100);
       },
@@ -381,7 +382,8 @@ export const WxAuth = {
 
     // 自动聚焦到第一个输入框
     setTimeout(() => {
-      const firstInput = document.querySelector<HTMLInputElement>(".wx-auth-input");
+      const firstInput =
+        document.querySelector<HTMLInputElement>(".wx-auth-input");
       if (firstInput) firstInput.focus();
     }, 100);
   },
