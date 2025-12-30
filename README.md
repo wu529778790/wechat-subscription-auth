@@ -222,6 +222,103 @@ wx-auth-sdk/src/protection.ts
 
 ---
 
+---
+
+## 🔧 SDK 开发和构建
+
+### SDK 目录结构
+```
+wx-auth-sdk/
+├── src/
+│   ├── index.ts           # SDK 入口
+│   ├── wx-auth.ts         # 核心逻辑
+│   ├── protection.ts      # 弹窗保护模块
+│   └── wx-auth.css        # 样式
+├── dist/                  # 构建产物
+│   ├── wx-auth.js         # ES Module (7.1 kB)
+│   ├── wx-auth.umd.js     # UMD (11 kB)
+│   ├── wx-auth.css        # 样式 (3.4 kB)
+│   └── index.d.ts         # TypeScript 类型
+├── vite.config.ts         # 构建配置
+└── package.json
+```
+
+### 构建 SDK
+```bash
+cd wx-auth-sdk
+pnpm install
+pnpm build
+pnpm type-check  # TypeScript 类型检查
+```
+
+### SDK 使用示例
+
+**ES Module 方式：**
+```typescript
+import { WxAuth } from '@wu529778790/wechat-auth-sdk';
+import '@wu529778790/wechat-auth-sdk/dist/style.css';
+
+WxAuth.init({
+  apiBase: 'https://your-api.com',
+  wechatName: '我的公众号',
+  qrcodeUrl: 'https://your-site.com/qrcode.jpg',
+  onVerified: (user) => {
+    console.log('认证成功', user);
+  },
+  onError: (error) => {
+    console.error('认证失败', error);
+  }
+});
+```
+
+**UMD 方式（浏览器脚本）：**
+```html
+<link rel="stylesheet" href="./dist/wx-auth.css">
+<script src="./dist/wx-auth.umd.js"></script>
+<script>
+  WxAuth.init({
+    apiBase: 'https://your-api.com',
+    onVerified: (user) => { /* ... */ }
+  });
+</script>
+```
+
+### SDK 核心特性
+
+1. **自动认证检测**
+   - 初始化时自动检查 `wxauth-openid` Cookie
+   - 已认证 → 静默通过，触发 `onVerified` 回调
+   - 未认证 → 显示认证弹窗
+
+2. **弹窗防删除保护**
+   - **MutationObserver** - 实时检测 DOM 删除（< 100ms）
+   - **定时器兜底** - 每秒检查一次（≤ 1000ms）
+   - **智能恢复** - 防止循环恢复
+
+3. **用户体验优化**
+   - 自动聚焦第一个输入框
+   - 支持粘贴 6 位数字
+   - 键盘导航（退格、方向键）
+   - 输入完成自动验证
+
+### API 参考
+
+**`WxAuth.init(options)`**
+- `apiBase` (必填): 后端 API 地址
+- `wechatName` (可选): 公众号名称
+- `qrcodeUrl` (可选): 二维码 URL
+- `onVerified` (可选): 验证成功回调
+- `onError` (可选): 错误回调
+
+**`WxAuth.requireAuth()`**
+- 手动触发认证流程
+- 返回 `Promise<boolean>`
+
+**`WxAuth.close()`**
+- 关闭认证弹窗
+
+---
+
 ## 🐳 Docker 部署
 
 ### 快速启动
@@ -250,7 +347,31 @@ GitHub Actions 自动构建并发布到：
 - GitHub Container Registry: `ghcr.io/your-username/wx-auth`
 - Docker Hub: `yourusername/wx-auth-system`
 
-**详细文档**：[DEPLOYMENT.md](./DEPLOYMENT.md)
+### 部署脚本
+
+项目提供了快速部署脚本 `deploy.sh`：
+
+```bash
+./deploy.sh [命令]
+
+Commands:
+  dev      启动开发环境
+  prod     启动生产环境
+  stop     停止服务
+  restart  重启服务
+  logs     查看日志
+  status   查看服务状态
+  update   更新到最新版本
+  clean    清理所有数据
+  help     显示帮助信息
+```
+
+**示例：**
+```bash
+./deploy.sh dev    # 开发环境
+./deploy.sh logs   # 查看日志
+./deploy.sh status # 查看状态
+```
 
 ---
 
@@ -354,6 +475,36 @@ STORAGE_TYPE=sqlite pnpm dev
 
 ---
 
+---
+
+## ✅ 测试总结
+
+### 核心模块测试通过
+
+| 模块 | 测试内容 | 状态 |
+|------|----------|------|
+| **SDK 构建** | ES Module / UMD / CSS / 类型声明 | ✅ 通过 |
+| **存储层** | JSON 文件 / SQLite 读写 | ✅ 通过 |
+| **Session 加密** | AES-256-GCM 加解密 | ✅ 通过 |
+| **微信签名** | 明文模式 / 安全模式 | ✅ 通过 |
+| **验证码** | 生成 / 过期 / 一次性使用 | ✅ 通过 |
+| **弹窗保护** | MutationObserver / 定时器 | ✅ 通过 |
+
+### SDK 体积统计
+- **ES Module**: 7.1 kB (gzip: 2.8 kB)
+- **UMD**: 11 kB (gzip: 4.1 kB)
+- **CSS**: 3.4 kB (gzip: 1.2 kB)
+- **总计**: < 12 KB ✅
+
+### 安全特性验证
+- ✅ **AES-256-GCM** - Session 数据加密
+- ✅ **SHA-1 签名** - 微信消息验证
+- ✅ **验证码过期** - 5分钟有效期
+- ✅ **一次性使用** - 验证后立即删除
+- ✅ **防弹窗删除** - MutationObserver 保护
+
+---
+
 ## 🐛 常见问题
 
 ### Q: 消息没有回复？
@@ -376,7 +527,7 @@ STORAGE_TYPE=sqlite pnpm dev
 - SQLite：`STORAGE_TYPE=sqlite pnpm dev`
 
 ### Q: 如何在其他网站中使用？
-**A**: 使用极简 SDK（推荐 NPM 方式）：
+**A**: 使用 SDK（推荐 NPM 方式）：
 
 ```bash
 npm install @wu529778790/wechat-auth-sdk
@@ -386,11 +537,44 @@ npm install @wu529778790/wechat-auth-sdk
 import WxAuth from '@wu529778790/wechat-auth-sdk';
 import '@wu529778790/wechat-auth-sdk/dist/index.css';
 
-WxAuth.init({ apiBase: 'https://your-api.com' });
-await WxAuth.requireAuth();
+WxAuth.init({
+  apiBase: 'https://your-api.com',
+  wechatName: '我的公众号',
+  qrcodeUrl: 'https://your-site.com/qrcode.jpg',
+  onVerified: (user) => {
+    console.log('认证成功', user);
+  }
+});
 ```
 
-**详细文档**：[wu529778790/wechat-auth-sdk](https://github.com/wu529778790/wechat-auth-sdk)
+**SDK 特性**：
+- ✅ 仅需配置 `apiBase`
+- ✅ 复用现有后端 API
+- ✅ 无额外依赖
+- ✅ 支持 ES Module 和 UMD 格式
+- ✅ 总大小 < 12KB
+- ✅ 弹窗防删除保护（MutationObserver + 定时器）
+
+---
+
+---
+
+## 📚 文档说明
+
+为保持项目简洁，已将详细文档整合到 README 中：
+
+| 原文档 | 状态 | 说明 |
+|--------|------|------|
+| `CHANGELOG.md` | ✅ 已整合 | 更新日志已合并到本 README |
+| `DEPLOYMENT.md` | ✅ 已整合 | Docker 部署指南已整合 |
+| `DOCKER_DEPLOYMENT.md` | ✅ 已整合 | 完整部署文档已整合 |
+| `PROTECTION_TEST.md` | ✅ 已整合 | SDK 保护机制已说明 |
+| `TEST_SUMMARY.md` | ✅ 已整合 | 测试报告已整合 |
+| `wx-auth-sdk/README.md` | ✅ 已整合 | SDK 文档已整合 |
+
+**保留的文档**：
+- `README.md` - 本文件（完整项目文档）
+- `CLAUDE.md` - 开发指南（仅开发人员使用）
 
 ---
 
