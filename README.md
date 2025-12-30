@@ -16,6 +16,8 @@
 - ✅ **轻量 SDK** - 提供 < 12KB 的嵌入式 SDK
 - ✅ **Docker 支持** - 一键部署，自动发布
 
+![20251230220047](https://gcore.jsdelivr.net/gh/wu529778790/image/blog/20251230220047.png)
+
 ---
 
 ## 🚀 快速开始
