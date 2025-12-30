@@ -94,7 +94,7 @@ STORAGE_TYPE=file  # 或 sqlite
 ### SDK 配置
 ```typescript
 WxAuth.init({
-  apiBase: 'https://auth.shenzjd.com',      // 后端 API 地址
+  apiBase: 'https://wx-auth.shenzjd.com',      // 后端 API 地址
   wechatName: '神族九帝',                    // 公众号名称
   qrcodeUrl: 'https://.../qrcode.jpg',      // 二维码 URL
   onVerified: (user) => { ... },            // 验证成功回调

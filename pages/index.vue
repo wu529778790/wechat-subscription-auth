@@ -21,7 +21,9 @@
           </div>
           <div v-if="WECHAT_QRCODE_URL" class="flex gap-2">
             <span class="font-bold text-[#07C160] w-16">二维码:</span>
-            <span class="text-gray-600 text-xs break-all">{{ WECHAT_QRCODE_URL }}</span>
+            <span class="text-gray-600 text-xs break-all">{{
+              WECHAT_QRCODE_URL
+            }}</span>
           </div>
         </div>
       </div>
@@ -35,7 +37,9 @@
           class="w-full py-3 bg-[#07C160] hover:bg-[#06AD56] text-white rounded-lg font-bold transition-all active:scale-[0.98]">
           清空认证状态
         </button>
-        <div v-else class="text-gray-500 text-sm">当前未认证，认证窗口将在页面加载时自动显示</div>
+        <div v-else class="text-gray-500 text-sm">
+          当前未认证，认证窗口将在页面加载时自动显示
+        </div>
       </div>
 
       <!-- 说明 -->
@@ -54,19 +58,20 @@
 
 <script setup lang="ts">
 // 导入 SDK
-import { WxAuth } from '../wx-auth-sdk/src/index';
-import '../wx-auth-sdk/src/wx-auth.css';
+import { WxAuth } from "../wx-auth-sdk/src/index";
+import "../wx-auth-sdk/src/wx-auth.css";
 
 // ==================== SDK 配置（修改这里） ====================
 // 你的后端 API 地址（必填）
-const API_BASE = 'https://auth.shenzjd.com';
+const API_BASE = "https://wx-auth.shenzjd.com";
 
 // 公众号名称（可选，用于显示）
-const WECHAT_NAME = '神族九帝';
+const WECHAT_NAME = "神族九帝";
 
 // 公众号二维码 URL（可选，留空显示默认占位图）
 // 示例: 'https://your-site.com/qrcode.jpg'
-const WECHAT_QRCODE_URL = 'https://gcore.jsdelivr.net/gh/wu529778790/image/blog/qrcode_for_gh_61da24be23ff_258.jpg';
+const WECHAT_QRCODE_URL =
+  "https://gcore.jsdelivr.net/gh/wu529778790/image/blog/qrcode_for_gh_61da24be23ff_258.jpg";
 // ============================================================
 
 const hasAuthCookie = ref(false);
@@ -102,13 +107,13 @@ onMounted(async () => {
     wechatName: WECHAT_NAME,
     qrcodeUrl: WECHAT_QRCODE_URL,
     onVerified: (user) => {
-      console.log('[Index] 验证成功', user);
+      console.log("[Index] 验证成功", user);
       updateButtonState();
     },
     onError: (error) => {
-      console.error('[Index] 错误', error);
+      console.error("[Index] 错误", error);
       // SDK 内部会处理错误显示
-    }
+    },
   });
 
   // 更新按钮状态
